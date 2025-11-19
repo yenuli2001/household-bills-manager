@@ -14,15 +14,21 @@ const api = axios.create({
 });
 
 export const billService = {
-  getAllBills: () => api.get('/bills/'),
-  getBill: (id) => api.get(`/bills/${id}/`),
+  // Authentication
+  register: (userData) => api.post('/register/', userData),
+  login: (credentials) => api.post('/login/', credentials),
+  logout: () => api.post('/logout/'),
+  
+  // Bills - now require user_id
+  getAllBills: (userId) => api.get(`/bills/?user_id=${userId}`),
+  getBill: (id, userId) => api.get(`/bills/${id}/?user_id=${userId}`),
   createBill: (billData) => api.post('/bills/', billData),
   updateBill: (id, billData) => api.put(`/bills/${id}/`, billData),
-  deleteBill: (id) => api.delete(`/bills/${id}/`),
-  getMonthlySummary: (month, year) => 
-    api.get(`/bills/monthly_summary/?month=${month}&year=${year}`),
-  getYearlyOverview: (year) => 
-    api.get(`/bills/yearly_overview/?year=${year}`),
+  deleteBill: (id, userId) => api.delete(`/bills/${id}/?user_id=${userId}`),
+  getMonthlySummary: (month, year, userId) => 
+    api.get(`/bills/monthly_summary/?month=${month}&year=${year}&user_id=${userId}`),
+  getYearlyOverview: (year, userId) => 
+    api.get(`/bills/yearly_overview/?year=${year}&user_id=${userId}`),
 };
 
 export default api;

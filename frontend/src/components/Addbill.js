@@ -3,7 +3,7 @@ import { Form, Button, Card, Alert, Row, Col, Badge } from 'react-bootstrap';
 import { billService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
-const AddBill = () => {
+const AddBill = ({ user }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     bill_type: 'ELECTRICITY',
@@ -59,7 +59,8 @@ const AddBill = () => {
       await billService.createBill({
         ...formData,
         amount: parseFloat(formData.amount),
-        discount: parseFloat(formData.discount)
+        discount: parseFloat(formData.discount),
+        user_id: user.id
       });
       navigate('/bills');
     } catch (err) {

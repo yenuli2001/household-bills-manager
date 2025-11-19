@@ -3,13 +3,16 @@ import { Table, Button, Card, Alert, Badge, Row, Col, Form } from 'react-bootstr
 import { billService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
-const BillList = () => {
+const BillList = ({ user }) => {
   const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [monthlyBudget, setMonthlyBudget] = useState(() => {
+    return localStorage.getItem(`monthlyBudget_${user?.id}`) || '';
+  });
 
   const billTypeIcons = {
     'ELECTRICITY': '⚡',
@@ -41,11 +44,11 @@ const BillList = () => {
 
   useEffect(() => {
     fetchBills();
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, user]);
 
   const fetchBills = async () => {
     try {
-      const response = await billService.getAllBills();
+      const response = await billService.getAllBills(user.id);
       const allBills = response.data;
       
       const filteredBills = allBills.filter(bill => {
@@ -65,7 +68,7 @@ const BillList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
-        await billService.deleteBill(id);
+        await billService.deleteBill(id, user.id);
         fetchBills();
       } catch (err) {
         setError('Failed to delete expense');
@@ -83,6 +86,13 @@ const BillList = () => {
 
   const calculateMonthlyTotal = () => {
     return bills.reduce((total, bill) => total + parseFloat(bill.final_amount), 0);
+  };
+
+  const calculateRemainingBudget = () => {
+    if (!monthlyBudget) return 0;
+    const budget = parseFloat(monthlyBudget);
+    const totalExpenses = calculateMonthlyTotal();
+    return budget - totalExpenses;
   };
 
   const getBillsByType = (type) => {
@@ -163,6 +173,21 @@ const BillList = () => {
           </Row>
         </Card.Body>
       </Card>
+
+      {/* Budget Info */}
+      {monthlyBudget && (
+        <Card className="mb-3 border-0 bg-light">
+          <Card.Body className="py-2">
+            <div className="d-flex justify-content-between align-items-center">
+              <small className="text-muted">Monthly Budget: <strong>Rs. {parseFloat(monthlyBudget).toFixed(2)}</strong></small>
+              <small className={calculateRemainingBudget() >= 0 ? 'text-success' : 'text-danger'}>
+                {calculateRemainingBudget() >= 0 ? 'Remaining: ' : 'Over by: '}
+                <strong>Rs. {Math.abs(calculateRemainingBudget()).toFixed(2)}</strong>
+              </small>
+            </div>
+          </Card.Body>
+        </Card>
+      )}
 
       {error && (
         <Alert variant="danger" className="d-flex align-items-center">

@@ -2,25 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Alert, Form, Badge, Button, Modal } from 'react-bootstrap';
 import { billService } from '../services/api';
 
-const Dashboard = () => {
+const Dashboard = ({ user }) => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [monthlyBudget, setMonthlyBudget] = useState(() => {
-    return localStorage.getItem('monthlyBudget') || '';
+    return localStorage.getItem(`monthlyBudget_${user?.id}`) || '';
   });
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [tempBudget, setTempBudget] = useState('');
 
   useEffect(() => {
     fetchSummary();
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, user]);
 
   const fetchSummary = async () => {
     try {
-      const response = await billService.getMonthlySummary(selectedMonth, selectedYear);
+      const response = await billService.getMonthlySummary(
+        selectedMonth, 
+        selectedYear,
+        user.id
+      );
       setSummary(response.data);
     } catch (err) {
       setError('Failed to fetch dashboard data');
@@ -33,7 +37,7 @@ const Dashboard = () => {
     const budgetValue = parseFloat(tempBudget);
     if (!isNaN(budgetValue) && budgetValue >= 0) {
       setMonthlyBudget(tempBudget);
-      localStorage.setItem('monthlyBudget', tempBudget);
+      localStorage.setItem(`monthlyBudget_${user.id}`, tempBudget);
       setShowBudgetModal(false);
       setTempBudget('');
     }
@@ -41,7 +45,7 @@ const Dashboard = () => {
 
   const handleClearBudget = () => {
     setMonthlyBudget('');
-    localStorage.removeItem('monthlyBudget');
+    localStorage.removeItem(`monthlyBudget_${user.id}`);
     setShowBudgetModal(false);
     setTempBudget('');
   };
@@ -164,7 +168,7 @@ const Dashboard = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="mb-1">💰 Expense Dashboard</h2>
-          <p className="text-muted mb-0">Track and manage your monthly expenses</p>
+          <p className="text-muted mb-0">Welcome back, {user?.name}! Track and manage your monthly expenses</p>
         </div>
         <div className="d-flex gap-3">
           <Form.Group className="mb-0">
