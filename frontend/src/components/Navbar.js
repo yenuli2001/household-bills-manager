@@ -1,18 +1,13 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container, Dropdown } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const Navbar = ({ user, onLogout }) => {
+const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleNavigation = (path) => {
     navigate(path);
-  };
-
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
   };
 
   return (
@@ -25,7 +20,6 @@ const Navbar = ({ user, onLogout }) => {
         >
           🏠 Household Bills Manager
         </BootstrapNavbar.Brand>
-        
         <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
         <BootstrapNavbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
@@ -57,23 +51,6 @@ const Navbar = ({ user, onLogout }) => {
             >
               Reports
             </Nav.Link>
-          </Nav>
-          
-          <Nav>
-            <Dropdown>
-              <Dropdown.Toggle variant="outline-light" id="dropdown-basic">
-                👤 {user?.name || 'User'}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.ItemText>
-                  <small>Signed in as<br /><strong>{user?.email}</strong></small>
-                </Dropdown.ItemText>
-                <Dropdown.Divider />
-                <Dropdown.Item onClick={handleLogout}>
-                  🚪 Logout
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>

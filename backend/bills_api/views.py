@@ -1,27 +1,26 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Sum, Avg
-from datetime import datetime
 from .models import Bill
 from .serializers import BillSerializer
+from django.db.models import Sum, Avg
+from datetime import datetime
 
 class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
     serializer_class = BillSerializer
-
-    def get_queryset(self):
-        # For now, return all bills (we'll add user filtering later)
-        return Bill.objects.all()
-
+    
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
         try:
+            # Get current month and year
             today = datetime.now()
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
             
             bills = Bill.objects.filter(date__year=year, date__month=month)
             
+            # Calculate totals using Python instead of complex database annotations
             def get_type_total(bill_type):
                 type_bills = bills.filter(bill_type=bill_type)
                 return sum(bill.final_amount for bill in type_bills)
@@ -43,6 +42,7 @@ class BillViewSet(viewsets.ModelViewSet):
                 'original_total_all': float(bills.aggregate(total=Sum('amount'))['total'] or 0),
             }
             
+            # Calculate total savings
             summary['total_savings'] = summary['original_total_all'] - summary['total_all']
             
             return Response(summary)
@@ -66,17 +66,3 @@ class BillViewSet(viewsets.ModelViewSet):
             return Response(monthly_data)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-# Simple login for demo
-@api_view(['POST'])
-def simple_login(request):
-    # Simple demo login - we'll enhance this later
-    return Response({
-        'success': True,
-        'message': 'Login successful (demo)',
-        'user': {
-            'email': 'demo@user.com',
-            'name': 'Demo User',
-            'id': 1
-        }
-    })
