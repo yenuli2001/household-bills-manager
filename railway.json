@@ -4,7 +4,7 @@
         "builder": "NIXPACKS"
     },
     "deploy": {
-        "startCommand": "python manage.py migrate && gunicorn bills_backend.wsgi:application",
+        "startCommand": "cd backend && python manage.py migrate && gunicorn bills_backend.wsgi:application",
         "restartPolicyType": "ON_FAILURE"
     }
 }
