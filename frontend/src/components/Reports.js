@@ -9,7 +9,7 @@ import {
   Tooltip
 } from 'recharts';
 
-const Reports = ({ user }) => {
+const Reports = () => {
   const [yearlyData, setYearlyData] = useState([]);
   const [summary, setSummary] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -19,14 +19,14 @@ const Reports = ({ user }) => {
 
   useEffect(() => {
     fetchReportsData();
-  }, [selectedYear, user]);
+  }, [selectedYear]);
 
   const fetchReportsData = async () => {
     try {
       const today = new Date();
       const [yearlyResponse, summaryResponse] = await Promise.all([
-        billService.getYearlyOverview(selectedYear, user.id),
-        billService.getMonthlySummary(today.getMonth() + 1, selectedYear, user.id)
+        billService.getYearlyOverview(selectedYear),
+        billService.getMonthlySummary(today.getMonth() + 1, selectedYear)
       ]);
       setYearlyData(yearlyResponse.data);
       setSummary(summaryResponse.data);

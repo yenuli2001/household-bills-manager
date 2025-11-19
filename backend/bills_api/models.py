@@ -1,15 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
-class User(models.Model):
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)  # Simple hashing
-    name = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.email
-
 class Bill(models.Model):
     BILL_TYPES = [
         ('ELECTRICITY', 'Electricity'),
@@ -25,7 +16,6 @@ class Bill(models.Model):
         ('OTHER', 'Other Expenses'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to user
     bill_type = models.CharField(max_length=20, choices=BILL_TYPES)
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0)])
@@ -43,4 +33,4 @@ class Bill(models.Model):
         ordering = ['-date']
     
     def __str__(self):
-        return f"{self.user.email} - {self.bill_type} - ${self.final_amount:.2f}"
+        return f"{self.bill_type} - ${self.final_amount:.2f} - {self.date}"
