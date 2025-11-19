@@ -1,9 +1,11 @@
 import axios from 'axios';
 
 // Use environment variable for production, fallback for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://household-bills-manager-production.up.railway.app/api'
+  : 'http://localhost:8000/api';
 
-console.log('API Base URL:', API_BASE_URL); // Debug log
+console.log('API Base URL:', API_BASE_URL); // For debugging
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -16,7 +18,7 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    console.error('API Error:', error);
     return Promise.reject(error);
   }
 );
