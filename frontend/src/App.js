@@ -1,14 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
-
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import BillList from './components/BillList';
 import AddBill from './components/Addbill';
 import Reports from './components/Reports';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
 
 function App() {
   return (
