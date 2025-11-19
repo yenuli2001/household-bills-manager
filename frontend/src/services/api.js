@@ -13,6 +13,40 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Add token to requests if available
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Token ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Handle token expiration
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/#/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const authService = {
+  register: (userData) => api.post('/auth/register/', userData),
+  login: (credentials) => api.post('/auth/login/', credentials),
+  logout: () => api.post('/auth/logout/'),
+  getCurrentUser: () => api.get('/auth/user/'),
+};
+
 export const billService = {
   getAllBills: () => api.get('/bills/'),
   getBill: (id) => api.get(`/bills/${id}/`),
