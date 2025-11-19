@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import BillViewSet, register, login
 
 router = DefaultRouter()
-router.register(r'bills', BillViewSet)
+router.register(r'bills', BillViewSet, basename='bill')  # ADD basename here
 
 urlpatterns = [
     path('', include(router.urls)),
