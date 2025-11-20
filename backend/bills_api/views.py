@@ -1,35 +1,26 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework import status
-from django.contrib.auth.models import User
 from .models import Bill
-from .serializers import BillSerializer, UserSerializer
+from .serializers import BillSerializer
 from django.db.models import Sum, Avg
 from datetime import datetime
 
 class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
     serializer_class = BillSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        return Bill.objects.filter(user=self.request.user)
-    
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
         try:
+            # Get current month and year
             today = datetime.now()
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
             
-            bills = Bill.objects.filter(user=request.user, date__year=year, date__month=month)
+            bills = Bill.objects.filter(date__year=year, date__month=month)
             
+            # Calculate totals using Python instead of complex database annotations
             def get_type_total(bill_type):
                 type_bills = bills.filter(bill_type=bill_type)
                 return sum(bill.final_amount for bill in type_bills)
@@ -51,6 +42,7 @@ class BillViewSet(viewsets.ModelViewSet):
                 'original_total_all': float(bills.aggregate(total=Sum('amount'))['total'] or 0),
             }
             
+            # Calculate total savings
             summary['total_savings'] = summary['original_total_all'] - summary['total_all']
             
             return Response(summary)
@@ -64,7 +56,7 @@ class BillViewSet(viewsets.ModelViewSet):
             
             monthly_data = []
             for month in range(1, 13):
-                monthly_bills = Bill.objects.filter(user=request.user, date__year=year, date__month=month)
+                monthly_bills = Bill.objects.filter(date__year=year, date__month=month)
                 total = sum(bill.final_amount for bill in monthly_bills)
                 monthly_data.append({
                     'month': month,
@@ -74,29 +66,3 @@ class BillViewSet(viewsets.ModelViewSet):
             return Response(monthly_data)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-class RegisterView(viewsets.ViewSet):
-    def create(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-                'user_id': user.id,
-                'username': user.username
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class CustomAuthToken(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-            'username': user.username
-        })
