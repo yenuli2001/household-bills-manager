@@ -3,25 +3,27 @@
   background-color: #f8f9fa;
 }
 
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .table-responsive {
-    font-size: 0.875rem;
-  }
-  
-  .card {
-    margin-bottom: 1rem;
-  }
-  
-  .btn {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
+/* Custom styles for the app */
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  transition: box-shadow 0.15s ease-in-out;
 }
 
-/* Print styles */
-@media print {
-  .navbar, .btn {
-    display: none !important;
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Responsive padding for mobile */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
