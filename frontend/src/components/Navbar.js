@@ -1,7 +1,6 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container, NavDropdown } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authService, isAuthenticated } from '../services/api';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -10,17 +9,6 @@ const Navbar = () => {
   const handleNavigation = (path) => {
     navigate(path);
   };
-
-  const handleLogout = () => {
-    authService.logout();
-    navigate('/login');
-  };
-
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-  if (!isAuthenticated()) {
-    return null; // Don't show navbar on auth pages
-  }
 
   return (
     <BootstrapNavbar bg="dark" variant="dark" expand="lg" fixed="top">
@@ -63,14 +51,6 @@ const Navbar = () => {
             >
               Reports
             </Nav.Link>
-          </Nav>
-          <Nav>
-            <NavDropdown title={`👤 ${user.username}`} id="user-dropdown">
-              <NavDropdown.Item onClick={handleLogout}>
-                <i className="fas fa-sign-out-alt me-2"></i>
-                Logout
-              </NavDropdown.Item>
-            </NavDropdown>
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>
