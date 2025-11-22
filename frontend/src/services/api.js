@@ -25,4 +25,18 @@ export const billService = {
     api.get(`/bills/yearly_overview/?year=${year}`),
 };
 
+export const authService = {
+  register: (payload) => api.post('/auth/register/', payload),
+  login: (payload) => api.post('/auth/login/', payload),
+  logout: () => api.post('/auth/logout/'),
+  setAuthToken: (token) => {
+    if (token) api.defaults.headers.common['Authorization'] = `Token ${token}`;
+  },
+  clearAuthToken: () => {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
+
+export const getCurrentUser = () => api.get('/auth/me/');
+
 export default api;
