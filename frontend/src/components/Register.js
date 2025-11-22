@@ -39,15 +39,10 @@ const Register = () => {
         password: formData.password
       });
       
-      // Auto-login after registration
-      const loginResponse = await authService.login({
-        username: formData.username,
-        password: formData.password
-      });
-      
+      localStorage.setItem('userToken', response.data.token);
       localStorage.setItem('currentUser', JSON.stringify({
-        id: loginResponse.data.user_id,
-        username: loginResponse.data.username
+        id: response.data.user_id,
+        username: response.data.username
       }));
       navigate('/');
     } catch (err) {

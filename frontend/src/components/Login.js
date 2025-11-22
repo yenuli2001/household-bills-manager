@@ -26,6 +26,7 @@ const Login = () => {
 
     try {
       const response = await authService.login(formData);
+      localStorage.setItem('userToken', response.data.token);
       localStorage.setItem('currentUser', JSON.stringify({
         id: response.data.user_id,
         username: response.data.username

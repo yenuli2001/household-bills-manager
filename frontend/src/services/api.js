@@ -1,9 +1,6 @@
 import axios from 'axios';
 
-// Direct URL to your working backend
 const API_BASE_URL = 'https://household-bills-manager-production.up.railway.app/api';
-
-console.log('API URL:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,6 +9,25 @@ const api = axios.create({
   },
   timeout: 10000,
 });
+
+// Add token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('userToken');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export const authService = {
+  register: (userData) => api.post('/register/', userData),
+  login: (credentials) => api.post('/login/', credentials),
+};
 
 export const billService = {
   getAllBills: () => api.get('/bills/'),
