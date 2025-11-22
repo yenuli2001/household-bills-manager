@@ -1,23 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from .models import Bill
 from .serializers import BillSerializer
 from django.db.models import Sum, Avg
 from datetime import datetime
 
 class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
     serializer_class = BillSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # only return bills for the authenticated user
-        user = self.request.user
-        return Bill.objects.filter(user=user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
