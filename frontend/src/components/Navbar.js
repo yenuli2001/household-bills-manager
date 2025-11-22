@@ -1,6 +1,7 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container, Button } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { authService } from '../services/api';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -8,6 +9,15 @@ const Navbar = () => {
 
   const handleNavigation = (path) => {
     navigate(path);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate('/login');
+    } catch (err) {
+      navigate('/login');
+    }
   };
 
   return (
@@ -18,41 +28,19 @@ const Navbar = () => {
           onClick={(e) => { e.preventDefault(); handleNavigation('/'); }}
           style={{ cursor: 'pointer' }}
         >
-          🏠 Household Bills Manager
+          🏠 Bills Manager
         </BootstrapNavbar.Brand>
-        <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
-        <BootstrapNavbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link 
-              active={location.pathname === '/'}
-              onClick={() => handleNavigation('/')}
-              style={{ cursor: 'pointer' }}
-            >
-              Dashboard
-            </Nav.Link>
-            <Nav.Link 
-              active={location.pathname === '/bills'}
-              onClick={() => handleNavigation('/bills')}
-              style={{ cursor: 'pointer' }}
-            >
-              All Bills
-            </Nav.Link>
-            <Nav.Link 
-              active={location.pathname === '/add-bill'}
-              onClick={() => handleNavigation('/add-bill')}
-              style={{ cursor: 'pointer' }}
-            >
-              Add Bill
-            </Nav.Link>
-            <Nav.Link 
-              active={location.pathname === '/reports'}
-              onClick={() => handleNavigation('/reports')}
-              style={{ cursor: 'pointer' }}
-            >
-              Reports
-            </Nav.Link>
-          </Nav>
-        </BootstrapNavbar.Collapse>
+        
+        <Nav className="me-auto">
+          <Nav.Link onClick={() => handleNavigation('/')}>Dashboard</Nav.Link>
+          <Nav.Link onClick={() => handleNavigation('/bills')}>Bills</Nav.Link>
+          <Nav.Link onClick={() => handleNavigation('/add-bill')}>Add Bill</Nav.Link>
+          <Nav.Link onClick={() => handleNavigation('/reports')}>Reports</Nav.Link>
+        </Nav>
+        
+        <Button variant="outline-light" onClick={handleLogout}>
+          Logout
+        </Button>
       </Container>
     </BootstrapNavbar>
   );
