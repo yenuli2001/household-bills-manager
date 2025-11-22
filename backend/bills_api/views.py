@@ -3,7 +3,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db.models import Sum, Avg
 from datetime import datetime
@@ -77,26 +76,40 @@ class BillViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 def register_user(request):
     try:
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                'message': 'User created successfully',
-                'user_id': user.id,
-                'username': user.username
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email', '')
+        
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email
+        )
+        UserProfile.objects.create(user=user)
+        
+        return Response({
+            'message': 'User created successfully',
+            'user_id': user.id,
+            'username': user.username
+        }, status=status.HTTP_201_CREATED)
+        
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def login_user(request):
     try:
+        from django.contrib.auth import authenticate
+        
         username = request.data.get('username')
         password = request.data.get('password')
         
         user = authenticate(username=username, password=password)
-        if user:
+        if user is not None:
+            from django.contrib.auth import login
             login(request, user)
             return Response({
                 'message': 'Login successful',
@@ -109,32 +122,20 @@ def login_user(request):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def logout_user(request):
     try:
+        from django.contrib.auth import logout
         logout(request)
         return Response({'message': 'Logout successful'})
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
     try:
         profile, created = UserProfile.objects.get_or_create(user=request.user)
-        
-        if request.method == 'GET':
-            serializer = UserProfileSerializer(profile)
-            return Response(serializer.data)
-        
-        elif request.method == 'PUT':
-            monthly_budget = request.data.get('monthly_budget')
-            if monthly_budget is not None:
-                profile.monthly_budget = monthly_budget
-                profile.save()
-            
-            serializer = UserProfileSerializer(profile)
-            return Response(serializer.data)
-            
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
