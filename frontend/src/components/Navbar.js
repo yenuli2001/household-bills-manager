@@ -1,25 +1,14 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container, NavDropdown } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
   const handleNavigation = (path) => {
     navigate(path);
   };
-
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('userToken');
-    navigate('/login');
-  };
-
-  if (!currentUser) {
-    return null;
-  }
 
   return (
     <BootstrapNavbar bg="dark" variant="dark" expand="lg" fixed="top">
@@ -62,14 +51,6 @@ const Navbar = () => {
             >
               Reports
             </Nav.Link>
-          </Nav>
-          <Nav>
-            <NavDropdown title={`👤 ${currentUser.username}`} id="user-dropdown">
-              <NavDropdown.Item onClick={handleLogout}>
-                <i className="fas fa-sign-out-alt me-2"></i>
-                Logout
-              </NavDropdown.Item>
-            </NavDropdown>
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>

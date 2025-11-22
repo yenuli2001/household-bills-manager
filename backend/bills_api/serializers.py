@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from .models import Bill, User
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'monthly_budget', 'token']
-        read_only_fields = ['token']
+from .models import Bill
 
 class BillSerializer(serializers.ModelSerializer):
     final_amount = serializers.ReadOnlyField()
