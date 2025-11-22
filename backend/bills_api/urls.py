@@ -1,12 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BillViewSet, RegisterAPI, LoginAPI
+from .views import BillViewSet
 
 router = DefaultRouter()
 router.register(r'bills', BillViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('register/', RegisterAPI.as_view(), name='register'),
-    path('login/', LoginAPI.as_view(), name='login'),
 ]
