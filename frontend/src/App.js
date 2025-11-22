@@ -6,8 +6,6 @@ import Dashboard from './components/Dashboard';
 import BillList from './components/BillList';
 import AddBill from './components/Addbill';
 import Reports from './components/Reports';
-import Login from './components/Login';
-import Register from './components/Register';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -22,8 +20,6 @@ function App() {
             <Route path="/bills" element={<BillList />} />
             <Route path="/add-bill" element={<AddBill />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
           </Routes>
         </Container>
       </div>

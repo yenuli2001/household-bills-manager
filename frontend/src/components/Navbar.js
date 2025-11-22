@@ -1,31 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const raw = localStorage.getItem('hb_user');
-    setUser(raw ? JSON.parse(raw) : null);
-
-    const onStorage = (e) => {
-      if (e.key === 'hb_user') {
-        setUser(e.newValue ? JSON.parse(e.newValue) : null);
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('hb_user');
-    setUser(null);
-    navigate('/login');
-  };
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -72,38 +51,6 @@ const Navbar = () => {
             >
               Reports
             </Nav.Link>
-          </Nav>
-          <Nav className="ms-auto">
-            {user ? (
-              <>
-                <Nav.Link style={{ cursor: 'default', color: '#bbb' }}>
-                  {user.username}
-                </Nav.Link>
-                <Nav.Link
-                  onClick={handleLogout}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Logout
-                </Nav.Link>
-              </>
-            ) : (
-              <>
-                <Nav.Link
-                  active={location.pathname === '/login'}
-                  onClick={() => handleNavigation('/login')}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Login
-                </Nav.Link>
-                <Nav.Link
-                  active={location.pathname === '/register'}
-                  onClick={() => handleNavigation('/register')}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Register
-                </Nav.Link>
-              </>
-            )}
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>
