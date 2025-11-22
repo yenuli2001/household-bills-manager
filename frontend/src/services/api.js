@@ -13,6 +13,28 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Token management: set Authorization header when token is available
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Token ${token}`;
+    localStorage.setItem('token', token);
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+    localStorage.removeItem('token');
+  }
+};
+
+// Initialize from storage if present
+const storedToken = localStorage.getItem('token');
+if (storedToken) setAuthToken(storedToken);
+
+export const authService = {
+  register: (data) => api.post('/auth/register/', data),
+  login: (data) => api.post('/auth/login/', data),
+  logout: () => api.post('/auth/logout/'),
+  getCurrentUser: () => api.get('/auth/user/'),
+};
+
 export const billService = {
   getAllBills: () => api.get('/bills/'),
   getBill: (id) => api.get(`/bills/${id}/`),
