@@ -6,17 +6,34 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
-from .serializers import RegisterSerializer, LoginSerializer
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
     try:
-        serializer = RegisterSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        password2 = request.data.get('password2')
 
-        user = serializer.save()
+        if not username or not email or not password:
+            return Response({'error': 'Please provide all required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != password2:
+            return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+
         token, created = Token.objects.get_or_create(user=user)
 
         return Response({
@@ -28,6 +45,7 @@ def register(request):
                 'email': user.email
             }
         }, status=status.HTTP_201_CREATED)
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -35,29 +53,18 @@ def register(request):
 @permission_classes([AllowAny])
 def user_login(request):
     try:
-        serializer = LoginSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-        data = serializer.validated_data
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
+        if not username or not password:
+            return Response({'error': 'Please provide both username and password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Allow login with username or email
-        user = None
-        if username:
-            user = authenticate(username=username, password=password)
-        elif email:
-            try:
-                u = User.objects.get(email=email)
-                user = authenticate(username=u.username, password=password)
-            except User.DoesNotExist:
-                user = None
+        user = authenticate(username=username, password=password)
 
         if user is not None:
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
+            
             return Response({
                 'message': 'Login successful',
                 'token': token.key,
@@ -69,6 +76,7 @@ def user_login(request):
             }, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

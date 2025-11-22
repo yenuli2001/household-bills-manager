@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authService } from '../services/api';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -9,26 +8,6 @@ const Navbar = () => {
 
   const handleNavigation = (path) => {
     navigate(path);
-  };
-
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('authUser');
-    if (stored) setUser(JSON.parse(stored));
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } catch (e) {
-      // ignore errors on logout
-    }
-    authService.clearAuthToken();
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    setUser(null);
-    navigate('/');
   };
 
   return (
@@ -72,19 +51,6 @@ const Navbar = () => {
             >
               Reports
             </Nav.Link>
-          </Nav>
-          <Nav>
-            {user ? (
-              <>
-                <Nav.Link style={{ cursor: 'default' }}>Hello, {user.username}</Nav.Link>
-                <Nav.Link onClick={handleLogout} style={{ cursor: 'pointer' }}>Logout</Nav.Link>
-              </>
-            ) : (
-              <>
-                <Nav.Link onClick={() => handleNavigation('/login')} style={{ cursor: 'pointer' }}>Login</Nav.Link>
-                <Nav.Link onClick={() => handleNavigation('/register')} style={{ cursor: 'pointer' }}>Register</Nav.Link>
-              </>
-            )}
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>

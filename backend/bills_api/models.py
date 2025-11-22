@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.contrib.auth.models import User
 
 class Bill(models.Model):
     BILL_TYPES = [
@@ -18,7 +17,6 @@ class Bill(models.Model):
     ]
     
     bill_type = models.CharField(max_length=20, choices=BILL_TYPES)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     date = models.DateField()
