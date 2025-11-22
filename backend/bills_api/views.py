@@ -1,26 +1,34 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Bill
-from .serializers import BillSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.db.models import Sum, Avg
 from datetime import datetime
+from .models import Bill, UserProfile
+from .serializers import BillSerializer, UserSerializer, UserProfileSerializer
 
 class BillViewSet(viewsets.ModelViewSet):
-    queryset = Bill.objects.all()
     serializer_class = BillSerializer
-    
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Bill.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
         try:
-            # Get current month and year
             today = datetime.now()
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
             
-            bills = Bill.objects.filter(date__year=year, date__month=month)
+            bills = Bill.objects.filter(user=request.user, date__year=year, date__month=month)
             
-            # Calculate totals using Python instead of complex database annotations
             def get_type_total(bill_type):
                 type_bills = bills.filter(bill_type=bill_type)
                 return sum(bill.final_amount for bill in type_bills)
@@ -42,7 +50,6 @@ class BillViewSet(viewsets.ModelViewSet):
                 'original_total_all': float(bills.aggregate(total=Sum('amount'))['total'] or 0),
             }
             
-            # Calculate total savings
             summary['total_savings'] = summary['original_total_all'] - summary['total_all']
             
             return Response(summary)
@@ -56,7 +63,7 @@ class BillViewSet(viewsets.ModelViewSet):
             
             monthly_data = []
             for month in range(1, 13):
-                monthly_bills = Bill.objects.filter(date__year=year, date__month=month)
+                monthly_bills = Bill.objects.filter(user=request.user, date__year=year, date__month=month)
                 total = sum(bill.final_amount for bill in monthly_bills)
                 monthly_data.append({
                     'month': month,
@@ -66,3 +73,68 @@ class BillViewSet(viewsets.ModelViewSet):
             return Response(monthly_data)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def register_user(request):
+    try:
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'message': 'User created successfully',
+                'user_id': user.id,
+                'username': user.username
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def login_user(request):
+    try:
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        user = authenticate(username=username, password=password)
+        if user:
+            login(request, user)
+            return Response({
+                'message': 'Login successful',
+                'user_id': user.id,
+                'username': user.username
+            })
+        else:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+    try:
+        logout(request)
+        return Response({'message': 'Logout successful'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    try:
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        if request.method == 'GET':
+            serializer = UserProfileSerializer(profile)
+            return Response(serializer.data)
+        
+        elif request.method == 'PUT':
+            monthly_budget = request.data.get('monthly_budget')
+            if monthly_budget is not None:
+                profile.monthly_budget = monthly_budget
+                profile.save()
+            
+            serializer = UserProfileSerializer(profile)
+            return Response(serializer.data)
+            
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
