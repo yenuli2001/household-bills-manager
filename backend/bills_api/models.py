@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.conf import settings
 
 class Bill(models.Model):
     BILL_TYPES = [
@@ -24,7 +23,6 @@ class Bill(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='bills')
     
     @property
     def final_amount(self):
@@ -35,5 +33,4 @@ class Bill(models.Model):
         ordering = ['-date']
     
     def __str__(self):
-        username = self.user.username if self.user else 'Unknown'
-        return f"{self.bill_type} - ${self.final_amount:.2f} - {self.date} - {username}"
+        return f"{self.bill_type} - ${self.final_amount:.2f} - {self.date}"

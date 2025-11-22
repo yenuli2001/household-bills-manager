@@ -1,24 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from .models import Bill
 from .serializers import BillSerializer
 from django.db.models import Sum, Avg
 from datetime import datetime
 
-
 class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
     serializer_class = BillSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Return bills belonging to the authenticated user
-        user = self.request.user
-        return Bill.objects.filter(user=user).order_by('-date')
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
@@ -28,7 +18,7 @@ class BillViewSet(viewsets.ModelViewSet):
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
             
-            bills = self.get_queryset().filter(date__year=year, date__month=month)
+            bills = Bill.objects.filter(date__year=year, date__month=month)
             
             # Calculate totals using Python instead of complex database annotations
             def get_type_total(bill_type):
@@ -66,7 +56,7 @@ class BillViewSet(viewsets.ModelViewSet):
             
             monthly_data = []
             for month in range(1, 13):
-                monthly_bills = self.get_queryset().filter(date__year=year, date__month=month)
+                monthly_bills = Bill.objects.filter(date__year=year, date__month=month)
                 total = sum(bill.final_amount for bill in monthly_bills)
                 monthly_data.append({
                     'month': month,

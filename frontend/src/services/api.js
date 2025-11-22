@@ -13,15 +13,6 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Attach token to requests if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers['Authorization'] = `Token ${token}`;
-  }
-  return config;
-});
-
 export const billService = {
   getAllBills: () => api.get('/bills/'),
   getBill: (id) => api.get(`/bills/${id}/`),
@@ -32,13 +23,6 @@ export const billService = {
     api.get(`/bills/monthly_summary/?month=${month}&year=${year}`),
   getYearlyOverview: (year) => 
     api.get(`/bills/yearly_overview/?year=${year}`),
-};
-
-export const authService = {
-  register: (data) => api.post('/auth/register/', data),
-  login: (data) => api.post('/auth/login/', data),
-  logout: () => api.post('/auth/logout/'),
-  getCurrentUser: () => api.get('/auth/user/'),
 };
 
 export default api;
