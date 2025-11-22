@@ -7,8 +7,17 @@ from django.db.models import Sum, Avg
 from datetime import datetime
 
 class BillViewSet(viewsets.ModelViewSet):
-    queryset = Bill.objects.all()
     serializer_class = BillSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user and user.is_authenticated:
+            return Bill.objects.filter(user=user)
+        return Bill.objects.none()
+
+    def perform_create(self, serializer):
+        # Attach the creating user to the bill
+        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
@@ -18,7 +27,7 @@ class BillViewSet(viewsets.ModelViewSet):
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
             
-            bills = Bill.objects.filter(date__year=year, date__month=month)
+            bills = self.get_queryset().filter(date__year=year, date__month=month)
             
             # Calculate totals using Python instead of complex database annotations
             def get_type_total(bill_type):
@@ -56,7 +65,7 @@ class BillViewSet(viewsets.ModelViewSet):
             
             monthly_data = []
             for month in range(1, 13):
-                monthly_bills = Bill.objects.filter(date__year=year, date__month=month)
+                monthly_bills = self.get_queryset().filter(date__year=year, date__month=month)
                 total = sum(bill.final_amount for bill in monthly_bills)
                 monthly_data.append({
                     'month': month,
