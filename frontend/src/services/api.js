@@ -1,20 +1,17 @@
 import axios from 'axios';
 
+// Direct URL to your working backend
 const API_BASE_URL = 'https://household-bills-manager-production.up.railway.app/api';
+
+console.log('API URL:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,  // Important for session cookies
+  timeout: 10000,
 });
-
-export const authService = {
-  register: (userData) => api.post('/register/', userData),
-  login: (credentials) => api.post('/login/', credentials),
-  logout: () => api.post('/logout/'),
-};
 
 export const billService = {
   getAllBills: () => api.get('/bills/'),
