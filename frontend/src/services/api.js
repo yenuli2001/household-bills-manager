@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Direct URL to your working backend
 const API_BASE_URL = 'https://household-bills-manager-production.up.railway.app/api';
 
 console.log('API URL:', API_BASE_URL);
@@ -10,43 +11,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 10000,
-  withCredentials: true, // Important for session cookies
 });
-
-// Add request interceptor to include CSRF token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor to handle auth errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('currentUser');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-export const authService = {
-  register: (userData) => api.post('/register/', userData),
-  login: (credentials) => api.post('/login/', credentials),
-  logout: () => api.post('/logout/'),
-  getProfile: () => api.get('/profile/'),
-  updateProfile: (profileData) => api.put('/profile/', profileData),
-};
 
 export const billService = {
   getAllBills: () => api.get('/bills/'),

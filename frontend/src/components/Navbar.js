@@ -1,32 +1,14 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container, NavDropdown } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authService } from '../services/api';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
   const handleNavigation = (path) => {
     navigate(path);
   };
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-      localStorage.removeItem('currentUser');
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      localStorage.removeItem('currentUser');
-      navigate('/login');
-    }
-  };
-
-  if (!currentUser) {
-    return null; // Don't show navbar if not logged in
-  }
 
   return (
     <BootstrapNavbar bg="dark" variant="dark" expand="lg" fixed="top">
@@ -69,19 +51,6 @@ const Navbar = () => {
             >
               Reports
             </Nav.Link>
-          </Nav>
-          <Nav>
-            <NavDropdown title={`👤 ${currentUser.username}`} id="user-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation('/profile')}>
-                <i className="fas fa-user me-2"></i>
-                Profile
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item onClick={handleLogout}>
-                <i className="fas fa-sign-out-alt me-2"></i>
-                Logout
-              </NavDropdown.Item>
-            </NavDropdown>
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>
