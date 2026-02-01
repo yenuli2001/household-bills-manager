@@ -1,82 +1,68 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum, Q
-from datetime import datetime
 from .models import Bill
 from .serializers import BillSerializer
+from django.db.models import Sum, Avg
+from datetime import datetime
 
 class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
     serializer_class = BillSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Only return bills for the logged-in user
-        return Bill.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        # Automatically set the user when creating a bill
-        serializer.save(user=self.request.user)
-
+    
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
-        month = request.query_params.get('month')
-        year = request.query_params.get('year')
-        
-        if not month or not year:
-            return Response(
-                {'error': 'Month and year parameters are required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        bills = self.get_queryset().filter(
-            due_date__month=month,
-            due_date__year=year
-        )
-        
-        total_amount = bills.aggregate(Sum('amount'))['amount__sum'] or 0
-        paid_amount = bills.filter(paid=True).aggregate(Sum('amount'))['amount__sum'] or 0
-        unpaid_amount = bills.filter(paid=False).aggregate(Sum('amount'))['amount__sum'] or 0
-        
-        return Response({
-            'month': month,
-            'year': year,
-            'total_bills': bills.count(),
-            'total_amount': float(total_amount),
-            'paid_amount': float(paid_amount),
-            'unpaid_amount': float(unpaid_amount),
-            'bills': BillSerializer(bills, many=True).data
-        })
-
+        try:
+            # Get current month and year
+            today = datetime.now()
+            month = int(request.query_params.get('month', today.month))
+            year = int(request.query_params.get('year', today.year))
+            
+            bills = Bill.objects.filter(date__year=year, date__month=month)
+            
+            # Calculate totals using Python instead of complex database annotations
+            def get_type_total(bill_type):
+                type_bills = bills.filter(bill_type=bill_type)
+                return sum(bill.final_amount for bill in type_bills)
+            
+            summary = {
+                'total_electricity': get_type_total('ELECTRICITY'),
+                'total_water': get_type_total('WATER'),
+                'total_grocery': get_type_total('GROCERY'),
+                'total_banking': get_type_total('BANKING'),
+                'total_loan': get_type_total('LOAN'),
+                'total_credit_card': get_type_total('CREDIT_CARD'),
+                'total_phone': get_type_total('PHONE'),
+                'total_wifi': get_type_total('WIFI'),
+                'total_fuel': get_type_total('FUEL'),
+                'total_vehicle_repair': get_type_total('VEHICLE_REPAIR'),
+                'total_other': get_type_total('OTHER'),
+                'total_all': sum(bill.final_amount for bill in bills),
+                'average_discount': float(bills.aggregate(avg=Avg('discount'))['avg'] or 0),
+                'original_total_all': float(bills.aggregate(total=Sum('amount'))['total'] or 0),
+            }
+            
+            # Calculate total savings
+            summary['total_savings'] = summary['original_total_all'] - summary['total_all']
+            
+            return Response(summary)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
     @action(detail=False, methods=['get'])
     def yearly_overview(self, request):
-        year = request.query_params.get('year')
-        
-        if not year:
-            return Response(
-                {'error': 'Year parameter is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        bills = self.get_queryset().filter(due_date__year=year)
-        
-        monthly_data = []
-        for month in range(1, 13):
-            month_bills = bills.filter(due_date__month=month)
-            total = month_bills.aggregate(Sum('amount'))['amount__sum'] or 0
-            paid = month_bills.filter(paid=True).aggregate(Sum('amount'))['amount__sum'] or 0
+        try:
+            year = int(request.query_params.get('year', datetime.now().year))
             
-            monthly_data.append({
-                'month': month,
-                'total_amount': float(total),
-                'paid_amount': float(paid),
-                'unpaid_amount': float(total - paid),
-                'bills_count': month_bills.count()
-            })
-        
-        return Response({
-            'year': year,
-            'monthly_data': monthly_data,
-            'total_amount': float(bills.aggregate(Sum('amount'))['amount__sum'] or 0)
-        })
+            monthly_data = []
+            for month in range(1, 13):
+                monthly_bills = Bill.objects.filter(date__year=year, date__month=month)
+                total = sum(bill.final_amount for bill in monthly_bills)
+                monthly_data.append({
+                    'month': month,
+                    'total': float(total)
+                })
+            
+            return Response(monthly_data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
