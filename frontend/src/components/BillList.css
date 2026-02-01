@@ -1,0 +1,467 @@
+/* Container */
+.billlist-container {
+  padding-top: 80px;
+  padding-bottom: 20px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.loading-container {
+  padding-top: 80px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Header */
+.billlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.add-expense-btn {
+  white-space: nowrap;
+}
+
+/* Month Selector Card */
+.month-selector-card .card-body {
+  padding: 1rem;
+}
+
+.month-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.month-title {
+  margin-bottom: 0.25rem;
+  font-size: 1.25rem;
+}
+
+.expense-count {
+  font-size: 0.85rem;
+}
+
+.total-badge {
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  white-space: nowrap;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-select {
+  flex: 1;
+}
+
+/* Category Cards */
+.category-card {
+  overflow: hidden;
+}
+
+.category-header {
+  background-color: #fff;
+}
+
+.category-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.category-name {
+  margin-bottom: 0;
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
+
+.item-count {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.category-total {
+  font-size: 1.1rem;
+}
+
+/* Desktop Table */
+.desktop-table {
+  display: block;
+}
+
+.mobile-bills {
+  display: none;
+}
+
+.discount-badge {
+  font-size: 0.75rem;
+}
+
+/* Alert */
+.alert-message {
+  margin-bottom: 1rem;
+}
+
+/* Empty State */
+.empty-state-card {
+  margin-top: 2rem;
+}
+
+.empty-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.empty-text {
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   MOBILE STYLES (< 768px)
+   ============================================ */
+
+@media (max-width: 767.98px) {
+  /* Container */
+  .billlist-container {
+    padding-top: 70px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .loading-container {
+    padding-top: 70px;
+  }
+
+  /* Header */
+  .billlist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+  }
+
+  .header-content {
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .add-expense-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-text {
+    display: inline;
+  }
+
+  /* Month Selector */
+  .month-selector-card .card-body {
+    padding: 0.75rem;
+  }
+
+  .month-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .month-details {
+    flex: 1;
+  }
+
+  .month-title {
+    font-size: 1.1rem;
+  }
+
+  .expense-count {
+    font-size: 0.75rem;
+  }
+
+  .total-badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .filter-controls {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  /* Category Header */
+  .category-header {
+    padding: 0.75rem !important;
+  }
+
+  .category-icon {
+    font-size: 1.25rem;
+    margin-right: 0.4rem;
+  }
+
+  .category-name {
+    font-size: 0.95rem;
+    margin-right: 0.4rem;
+  }
+
+  .item-count {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .category-total {
+    font-size: 0.95rem;
+  }
+
+  /* Hide Desktop Table */
+  .desktop-table {
+    display: none;
+  }
+
+  /* Show Mobile Cards */
+  .mobile-bills {
+    display: block;
+    padding: 0.5rem;
+  }
+
+  .bill-card {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e9ecef;
+  }
+
+  .bill-card:last-child {
+    margin-bottom: 0;
+  }
+
+  .bill-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .bill-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .delete-btn-mobile {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .bill-card-body {
+    padding: 0;
+  }
+
+  .bill-amount-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .amount-item {
+    flex: 1;
+    text-align: center;
+  }
+
+  .amount-item small {
+    display: block;
+    font-size: 0.7rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .amount-value {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .final-amount {
+    font-size: 1rem;
+    color: #212529;
+    font-weight: 600;
+  }
+
+  .discount-badge-mobile {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .bill-description {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .bill-description small {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    display: block;
+  }
+
+  /* Empty State */
+  .empty-state-card {
+    margin-top: 1rem;
+  }
+
+  .empty-state-card .card-body {
+    padding: 2rem 1rem !important;
+  }
+
+  .empty-state-card i {
+    font-size: 2.5rem !important;
+  }
+
+  .empty-title {
+    font-size: 1rem;
+  }
+
+  .empty-text {
+    font-size: 0.85rem;
+  }
+
+  .empty-state-card .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* ============================================
+   TABLET STYLES (768px - 991px)
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .category-name {
+    font-size: 1rem;
+  }
+
+  .category-total {
+    font-size: 1rem;
+  }
+}
+
+/* ============================================
+   SMALL MOBILE (< 576px)
+   ============================================ */
+
+@media (max-width: 575.98px) {
+  .billlist-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .month-selector-card .card-body {
+    padding: 0.6rem;
+  }
+
+  .month-title {
+    font-size: 1rem;
+  }
+
+  .total-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  .category-header {
+    padding: 0.6rem !important;
+  }
+
+  .category-name {
+    font-size: 0.85rem;
+  }
+
+  .category-total {
+    font-size: 0.85rem;
+  }
+
+  .bill-card {
+    padding: 0.6rem;
+  }
+
+  .bill-date {
+    font-size: 0.75rem;
+  }
+
+  .amount-value,
+  .final-amount {
+    font-size: 0.85rem;
+  }
+
+  .bill-description small {
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================
+   LANDSCAPE MOBILE
+   ============================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .billlist-container,
+  .loading-container {
+    padding-top: 60px;
+  }
+
+  .billlist-header {
+    margin-bottom: 1rem;
+  }
+
+  .bill-card {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* ============================================
+   HOVER EFFECTS (Desktop Only)
+   ============================================ */
+
+@media (min-width: 768px) {
+  .category-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s;
+  }
+
+  .desktop-table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+}

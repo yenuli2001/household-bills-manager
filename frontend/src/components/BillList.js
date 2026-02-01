@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Card, Alert, Badge, Row, Col, Form } from 'react-bootstrap';
 import { billService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import './BillList.css';
 
 const BillList = () => {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ const BillList = () => {
   ];
 
   if (loading) return (
-    <div className="text-center" style={{ paddingTop: '80px' }}>
+    <div className="text-center loading-container">
       <div className="spinner-border text-primary" role="status">
         <span className="visually-hidden">Loading...</span>
       </div>
@@ -104,44 +105,49 @@ const BillList = () => {
   );
 
   return (
-    <div style={{ paddingTop: '80px' }}>
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="mb-1">📋 All Expenses</h2>
-          <p className="text-muted mb-0">Manage and track your household expenses</p>
+    <div className="billlist-container">
+      {/* Header - Responsive */}
+      <div className="billlist-header">
+        <div className="header-content">
+          <h2 className="page-title">📋 All Expenses</h2>
+          <p className="page-subtitle">Manage and track your household expenses</p>
         </div>
-        <Button onClick={() => navigate('/add-bill')} variant="primary" className="px-4">
+        <Button 
+          onClick={() => navigate('/add-bill')} 
+          variant="primary" 
+          className="add-expense-btn"
+        >
           <i className="fas fa-plus-circle me-2"></i>
-          Add Expense
+          <span className="btn-text">Add Expense</span>
         </Button>
       </div>
 
-      {/* Month/Year Selector */}
-      <Card className="mb-4 border-0 shadow-sm">
+      {/* Month/Year Selector - Responsive */}
+      <Card className="mb-3 mb-md-4 border-0 shadow-sm month-selector-card">
         <Card.Body className="py-3">
-          <Row className="align-items-center">
-            <Col md={8}>
-              <div className="d-flex align-items-center gap-3">
-                <div>
-                  <h5 className="mb-0">
+          <Row className="align-items-center g-3">
+            <Col xs={12} md={8}>
+              <div className="month-info">
+                <div className="month-details">
+                  <h5 className="month-title">
                     {getMonthName(selectedMonth)} {selectedYear}
                   </h5>
-                  <small className="text-muted">
+                  <small className="text-muted expense-count">
                     {bills.length} expense{bills.length !== 1 ? 's' : ''} found
                   </small>
                 </div>
-                <Badge bg="primary" className="fs-6">
+                <Badge bg="primary" className="total-badge">
                   Total: Rs. {calculateMonthlyTotal().toFixed(2)}
                 </Badge>
               </div>
             </Col>
-            <Col md={4}>
-              <div className="d-flex gap-2">
+            <Col xs={12} md={4}>
+              <div className="filter-controls">
                 <Form.Select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
                   size="sm"
+                  className="filter-select"
                 >
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
@@ -153,6 +159,7 @@ const BillList = () => {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                   size="sm"
+                  className="filter-select"
                 >
                   {[2023, 2024, 2025, 2026].map(year => (
                     <option key={year} value={year}>{year}</option>
@@ -165,7 +172,7 @@ const BillList = () => {
       </Card>
 
       {error && (
-        <Alert variant="danger" className="d-flex align-items-center">
+        <Alert variant="danger" className="d-flex align-items-center alert-message">
           <i className="fas fa-exclamation-triangle me-2"></i>
           {error}
         </Alert>
@@ -179,21 +186,24 @@ const BillList = () => {
         if (typeBills.length === 0) return null;
 
         return (
-          <Card key={billType} className="mb-4 border-0 shadow-sm">
-            <Card.Header className="bg-white border-0 py-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center">
-                  <span className="me-2 fs-5">{billTypeIcons[billType]}</span>
-                  <h5 className="mb-0">{billType.replace('_', ' ')}</h5>
-                  <Badge bg={billTypeColors[billType]} className="ms-2">
-                    {typeBills.length} item{typeBills.length !== 1 ? 's' : ''}
+          <Card key={billType} className="mb-3 mb-md-4 border-0 shadow-sm category-card">
+            <Card.Header className="bg-white border-0 py-3 category-header">
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div className="d-flex align-items-center category-info">
+                  <span className="category-icon">{billTypeIcons[billType]}</span>
+                  <h5 className="category-name">{billType.replace('_', ' ')}</h5>
+                  <Badge bg={billTypeColors[billType]} className="item-count">
+                    {typeBills.length}
                   </Badge>
                 </div>
-                <strong className="text-primary">Rs. {typeTotal.toFixed(2)}</strong>
+                <strong className="text-primary category-total">
+                  Rs. {typeTotal.toFixed(2)}
+                </strong>
               </div>
             </Card.Header>
             <Card.Body className="p-0">
-              <div className="table-responsive">
+              {/* Desktop Table View */}
+              <div className="table-responsive desktop-table">
                 <Table hover className="mb-0">
                   <thead className="bg-light">
                     <tr>
@@ -221,7 +231,7 @@ const BillList = () => {
                         </td>
                         <td>
                           {bill.discount > 0 ? (
-                            <Badge bg="success" className="fs-3">
+                            <Badge bg="success" className="discount-badge">
                               {bill.discount}%
                             </Badge>
                           ) : (
@@ -251,6 +261,59 @@ const BillList = () => {
                   </tbody>
                 </Table>
               </div>
+
+              {/* Mobile Card View */}
+              <div className="mobile-bills">
+                {typeBills.map((bill) => (
+                  <div key={bill.id} className="bill-card">
+                    <div className="bill-card-header">
+                      <div className="bill-date">
+                        <i className="fas fa-calendar-alt me-1"></i>
+                        {new Date(bill.date).toLocaleDateString('en-US', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleDelete(bill.id)}
+                        className="delete-btn-mobile"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </Button>
+                    </div>
+                    
+                    <div className="bill-card-body">
+                      <div className="bill-amount-row">
+                        <div className="amount-item">
+                          <small className="text-muted">Original</small>
+                          <div className="amount-value">Rs. {parseFloat(bill.amount).toFixed(2)}</div>
+                        </div>
+                        {bill.discount > 0 && (
+                          <div className="amount-item">
+                            <small className="text-muted">Discount</small>
+                            <Badge bg="success" className="discount-badge-mobile">
+                              {bill.discount}%
+                            </Badge>
+                          </div>
+                        )}
+                        <div className="amount-item">
+                          <small className="text-muted">Final</small>
+                          <div className="final-amount">Rs. {parseFloat(bill.final_amount).toFixed(2)}</div>
+                        </div>
+                      </div>
+                      
+                      {bill.description && (
+                        <div className="bill-description">
+                          <small className="text-muted">{bill.description}</small>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card.Body>
           </Card>
         );
@@ -258,13 +321,13 @@ const BillList = () => {
 
       {/* No Expenses Message */}
       {bills.length === 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card className="border-0 shadow-sm empty-state-card">
           <Card.Body className="text-center py-5">
             <div className="mb-3">
               <i className="fas fa-receipt fa-3x text-muted"></i>
             </div>
-            <h5>No expenses found for {getMonthName(selectedMonth)} {selectedYear}</h5>
-            <p className="text-muted mb-3">
+            <h5 className="empty-title">No expenses found for {getMonthName(selectedMonth)} {selectedYear}</h5>
+            <p className="text-muted mb-3 empty-text">
               Start tracking your expenses by adding your first bill for this month.
             </p>
             <Button 
