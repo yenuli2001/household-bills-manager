@@ -164,7 +164,7 @@ const Dashboard = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="mb-1">💰 Expense Dashboard</h2>
-          <p className="text-muted mb-0">Track and manage your monthly expenses</p>
+          <p className="text-muted mb-0">  Track and manage your monthly expenses</p>
         </div>
         <div className="d-flex gap-3">
           <Form.Group className="mb-0">
