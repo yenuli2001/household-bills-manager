@@ -1,12 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// Direct URL to your working backend
+const API_BASE_URL = 'https://household-bills-manager-production.up.railway.app/api';
+
+console.log('API URL:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000,
 });
 
 export const billService = {
