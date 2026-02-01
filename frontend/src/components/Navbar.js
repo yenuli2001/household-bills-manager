@@ -1,10 +1,12 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container, Button } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -51,6 +53,18 @@ const Navbar = () => {
             >
               Reports
             </Nav.Link>
+          </Nav>
+          <Nav className="ms-auto">
+            <BootstrapNavbar.Text style={{ marginRight: '15px', color: '#fff' }}>
+              👤 {user?.username}
+            </BootstrapNavbar.Text>
+            <Button 
+              variant="outline-light" 
+              size="sm"
+              onClick={logout}
+            >
+              Logout
+            </Button>
           </Nav>
         </BootstrapNavbar.Collapse>
       </Container>
