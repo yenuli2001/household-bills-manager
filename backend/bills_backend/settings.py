@@ -138,19 +138,6 @@ REST_FRAMEWORK = {
 }
 
 # CORS Configuration
-if DEBUG:
-    # Allow all origins in development
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # Restrict to your frontend domain in production
-    CORS_ALLOWED_ORIGINS = os.environ.get(
-        'CORS_ALLOWED_ORIGINS',
-        'https://your-frontend-domain.vercel.app'
-    ).split(',')
-    
-    # If you want to allow all origins in production too (not recommended)
-    # CORS_ALLOW_ALL_ORIGINS = True
-
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -171,6 +158,30 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+# Handle CORS origins based on environment
+if DEBUG:
+    # Allow all origins in development
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # Production CORS handling
+    cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+    
+    if cors_origins == '*':
+        # Allow all origins if explicitly set to *
+        CORS_ALLOW_ALL_ORIGINS = True
+    elif cors_origins:
+        # Use specific origins from environment variable
+        CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',')]
+        # Also allow all Vercel preview deployments via regex
+        CORS_ALLOWED_ORIGIN_REGEXES = [
+            r"^https://.*\.vercel\.app$",
+        ]
+    else:
+        # Fallback: allow all Vercel domains
+        CORS_ALLOWED_ORIGIN_REGEXES = [
+            r"^https://.*\.vercel\.app$",
+        ]
 
 # Security settings for production
 if not DEBUG:
