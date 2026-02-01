@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Updated to Vercel backend
-const API_BASE_URL = 'https://household-bills-manager-backend-h1z8t599x.vercel.app/api';
+// Updated to NEW Vercel backend URL
+const API_BASE_URL = 'https://household-bills-manager-backend-cktlygqab.vercel.app/api';
 
 console.log('API URL:', API_BASE_URL);
 
