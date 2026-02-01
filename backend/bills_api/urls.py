@@ -5,7 +5,7 @@ from .views import BillViewSet
 from .auth_views import register, get_current_user
 
 router = DefaultRouter()
-router.register(r'bills', BillViewSet)
+router.register(r'bills', BillViewSet, basename='bill')
 
 urlpatterns = [
     path('', include(router.urls)),

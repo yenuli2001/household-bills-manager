@@ -7,6 +7,7 @@ class BillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bill
         fields = ['id', 'bill_type', 'amount', 'discount', 'final_amount', 'date', 'description', 'created_at', 'updated_at']
+        # user is NOT in fields - it's set automatically
     
     def validate_discount(self, value):
         if value < 0 or value > 100:

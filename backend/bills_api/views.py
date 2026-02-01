@@ -1,26 +1,38 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import Bill
 from .serializers import BillSerializer
 from django.db.models import Sum, Avg
 from datetime import datetime
 
 class BillViewSet(viewsets.ModelViewSet):
-    queryset = Bill.objects.all()
     serializer_class = BillSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        # Only return bills for the logged-in user
+        return Bill.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        # Automatically set the user when creating a bill
+        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['get'])
     def monthly_summary(self, request):
         try:
-            # Get current month and year
             today = datetime.now()
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
             
-            bills = Bill.objects.filter(date__year=year, date__month=month)
+            # Filter by user
+            bills = Bill.objects.filter(
+                user=request.user,
+                date__year=year,
+                date__month=month
+            )
             
-            # Calculate totals using Python instead of complex database annotations
             def get_type_total(bill_type):
                 type_bills = bills.filter(bill_type=bill_type)
                 return sum(bill.final_amount for bill in type_bills)
@@ -42,7 +54,6 @@ class BillViewSet(viewsets.ModelViewSet):
                 'original_total_all': float(bills.aggregate(total=Sum('amount'))['total'] or 0),
             }
             
-            # Calculate total savings
             summary['total_savings'] = summary['original_total_all'] - summary['total_all']
             
             return Response(summary)
@@ -56,7 +67,12 @@ class BillViewSet(viewsets.ModelViewSet):
             
             monthly_data = []
             for month in range(1, 13):
-                monthly_bills = Bill.objects.filter(date__year=year, date__month=month)
+                # Filter by user
+                monthly_bills = Bill.objects.filter(
+                    user=request.user,
+                    date__year=year,
+                    date__month=month
+                )
                 total = sum(bill.final_amount for bill in monthly_bills)
                 monthly_data.append({
                     'month': month,
