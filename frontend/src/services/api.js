@@ -12,12 +12,15 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Add token to requests
+// Add token to ALL requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Token attached:', token.substring(0, 20) + '...');
+    } else {
+      console.log('No token found in localStorage');
     }
     return config;
   },
@@ -37,6 +40,10 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) {
+          throw new Error('No refresh token');
+        }
+
         const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
           refresh: refreshToken,
         });
