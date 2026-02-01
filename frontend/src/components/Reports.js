@@ -18,6 +18,19 @@ const Reports = () => {
     return localStorage.getItem('monthlyBudget') || '';
   });
 
+  // Generate year options dynamically
+  const getYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2020; // Reasonable start year
+    const endYear = currentYear + 1; // Include next year for planning
+    
+    const years = [];
+    for (let year = endYear; year >= startYear; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
   useEffect(() => {
     fetchReportsData();
   }, [selectedYear]);
@@ -76,7 +89,7 @@ const Reports = () => {
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
             className="fw-semibold year-select"
           >
-            {[2023, 2024, 2025, 2026].map(year => (
+            {getYearOptions().map(year => (
               <option key={year} value={year}>{year}</option>
             ))}
           </Form.Select>
