@@ -21,8 +21,6 @@ IS_VERCEL = os.environ.get('VERCEL_ENV') is not None
 # Allowed hosts configuration
 if IS_VERCEL:
     ALLOWED_HOSTS = ['.vercel.app', '.now.sh']
-    # Add your custom domain if you have one
-    # ALLOWED_HOSTS.append('yourdomain.com')
 else:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -72,11 +70,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bills_backend.wsgi.application'
 
 # Database Configuration
-# PostgreSQL with fallback to SQLite for local development
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    # Use PostgreSQL from environment variable (Neon, Supabase, Vercel Postgres, etc.)
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -86,7 +82,6 @@ if DATABASE_URL:
         )
     }
 else:
-    # Fallback to SQLite for local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -137,7 +132,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS Configuration
+# CORS Configuration - Allow all origins (TEMPORARY FOR TESTING)
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -159,30 +155,6 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Handle CORS origins based on environment
-if DEBUG:
-    # Allow all origins in development
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # Production CORS handling
-    cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
-    
-    if cors_origins == '*':
-        # Allow all origins if explicitly set to *
-        CORS_ALLOW_ALL_ORIGINS = True
-    elif cors_origins:
-        # Use specific origins from environment variable
-        CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',')]
-        # Also allow all Vercel preview deployments via regex
-        CORS_ALLOWED_ORIGIN_REGEXES = [
-            r"^https://.*\.vercel\.app$",
-        ]
-    else:
-        # Fallback: allow all Vercel domains
-        CORS_ALLOWED_ORIGIN_REGEXES = [
-            r"^https://.*\.vercel\.app$",
-        ]
-
 # Security settings for production
 if not DEBUG:
     # HTTPS settings
@@ -203,7 +175,7 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
 
-# Logging configuration (optional but recommended)
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
