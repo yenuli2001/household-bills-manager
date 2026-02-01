@@ -1,0 +1,509 @@
+/* Container */
+.reports-container {
+  padding-top: 80px;
+  padding-bottom: 20px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Header */
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.year-selector {
+  min-width: 120px;
+}
+
+.year-select {
+  font-weight: 600;
+}
+
+/* Metric Cards */
+.metric-card {
+  transition: transform 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.metric-icon {
+  font-size: 2rem;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+}
+
+/* Chart Cards */
+.chart-card,
+.budget-card,
+.breakdown-card {
+  overflow: hidden;
+}
+
+.chart-header {
+  background-color: #fff;
+}
+
+.chart-title {
+  font-size: 1.1rem;
+}
+
+.chart-body,
+.budget-body {
+  padding: 1.25rem;
+}
+
+.chart-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Budget Card */
+.budget-status-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.budget-amount {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #212529;
+}
+
+.budget-label {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.budget-details small {
+  font-size: 0.8rem;
+}
+
+.budget-usage {
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.savings-badge {
+  font-size: 0.9rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.savings-amount {
+  font-size: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.savings-text {
+  font-size: 0.85rem;
+}
+
+/* Empty States */
+.empty-chart,
+.empty-budget {
+  padding: 3rem 1rem;
+}
+
+.empty-chart i,
+.empty-budget i {
+  opacity: 0.5;
+}
+
+/* Breakdown Table */
+.desktop-breakdown {
+  display: block;
+}
+
+.mobile-breakdown {
+  display: none;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   MOBILE STYLES (< 768px)
+   ============================================ */
+
+@media (max-width: 767.98px) {
+  /* Container */
+  .reports-container {
+    padding-top: 70px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* Header */
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+  }
+
+  .header-content {
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .year-selector {
+    width: 100%;
+  }
+
+  .year-select {
+    width: 100%;
+  }
+
+  /* Metric Cards */
+  .metric-card .card-body {
+    padding: 0.75rem !important;
+  }
+
+  .metric-icon {
+    font-size: 1.5rem;
+  }
+
+  .metric-icon i {
+    font-size: 1.5rem;
+  }
+
+  .metric-value {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .metric-label {
+    font-size: 0.7rem;
+  }
+
+  /* Chart Cards */
+  .chart-header {
+    padding: 0.75rem !important;
+  }
+
+  .chart-title {
+    font-size: 0.95rem;
+  }
+
+  .chart-title i {
+    font-size: 0.9rem;
+  }
+
+  .chart-body,
+  .budget-body {
+    padding: 0.75rem !important;
+  }
+
+  .chart-wrapper {
+    margin: 0 -0.75rem;
+    padding: 0 0.75rem;
+  }
+
+  /* Budget Card */
+  .budget-status {
+    margin-bottom: 1rem !important;
+  }
+
+  .budget-status-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .budget-amount {
+    font-size: 1.3rem;
+  }
+
+  .budget-label {
+    font-size: 0.85rem;
+  }
+
+  .budget-details {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .budget-details small {
+    font-size: 0.7rem;
+  }
+
+  .budget-usage {
+    font-size: 0.7rem;
+  }
+
+  .savings-box {
+    padding: 0.75rem !important;
+  }
+
+  .savings-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .savings-amount {
+    font-size: 1.1rem;
+    margin: 0.35rem 0;
+  }
+
+  .savings-text {
+    font-size: 0.75rem;
+  }
+
+  /* Empty States */
+  .empty-chart,
+  .empty-budget {
+    padding: 2rem 0.5rem;
+  }
+
+  .empty-chart i,
+  .empty-budget i {
+    font-size: 1.5rem !important;
+  }
+
+  .empty-chart p,
+  .empty-budget p {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-budget h6 {
+    font-size: 0.95rem;
+  }
+
+  /* Breakdown - Hide Table, Show Cards */
+  .desktop-breakdown {
+    display: none;
+  }
+
+  .mobile-breakdown {
+    display: block;
+    padding: 0.5rem;
+  }
+
+  .breakdown-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .breakdown-item:last-of-type {
+    border-bottom: none;
+  }
+
+  .color-dot-mobile {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .category-name-mobile {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .amount-mobile {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .percentage-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .breakdown-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-top: 2px solid #dee2e6;
+    font-size: 0.95rem;
+  }
+
+  .total-amount-mobile {
+    font-size: 1rem;
+  }
+}
+
+/* ============================================
+   TABLET STYLES (768px - 991px)
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .metric-value {
+    font-size: 1.3rem;
+  }
+
+  .budget-amount {
+    font-size: 1.5rem;
+  }
+
+  .chart-title {
+    font-size: 1rem;
+  }
+}
+
+/* ============================================
+   SMALL MOBILE (< 576px)
+   ============================================ */
+
+@media (max-width: 575.98px) {
+  .reports-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .metric-card .card-body {
+    padding: 0.6rem !important;
+  }
+
+  .metric-icon {
+    font-size: 1.25rem;
+  }
+
+  .metric-icon i {
+    font-size: 1.25rem;
+  }
+
+  .metric-value {
+    font-size: 0.95rem;
+  }
+
+  .metric-label {
+    font-size: 0.65rem;
+  }
+
+  .chart-header {
+    padding: 0.6rem !important;
+  }
+
+  .chart-title {
+    font-size: 0.85rem;
+  }
+
+  .chart-body,
+  .budget-body {
+    padding: 0.6rem !important;
+  }
+
+  .budget-status-title {
+    font-size: 1rem;
+  }
+
+  .budget-amount {
+    font-size: 1.1rem;
+  }
+
+  .budget-label {
+    font-size: 0.75rem;
+  }
+
+  .budget-details small {
+    font-size: 0.65rem;
+  }
+
+  .savings-amount {
+    font-size: 1rem;
+  }
+
+  .category-name-mobile {
+    font-size: 0.8rem;
+  }
+
+  .amount-mobile {
+    font-size: 0.85rem;
+  }
+
+  .breakdown-total {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+
+  .total-amount-mobile {
+    font-size: 0.9rem;
+  }
+}
+
+/* ============================================
+   LANDSCAPE MOBILE
+   ============================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .reports-container {
+    padding-top: 60px;
+  }
+
+  .reports-header {
+    margin-bottom: 1rem;
+  }
+
+  .metric-card .card-body {
+    padding: 0.5rem !important;
+  }
+
+  .empty-chart,
+  .empty-budget {
+    padding: 1.5rem 0.5rem;
+  }
+}
+
+/* ============================================
+   HOVER EFFECTS (Desktop Only)
+   ============================================ */
+
+@media (min-width: 768px) {
+  .metric-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .chart-card:hover,
+  .budget-card:hover,
+  .breakdown-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s;
+  }
+}
