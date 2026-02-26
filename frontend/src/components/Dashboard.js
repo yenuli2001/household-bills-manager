@@ -315,37 +315,51 @@ export default function Dashboard() {
       {/* ── Budget Modal ── */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <h3 className="modal-title">Set Budget</h3>
-                <p className="modal-subtitle">{MONTHS[selectedMonth-1]} {selectedYear}</p>
-              </div>
-              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+          <div className="budget-modal" onClick={e => e.stopPropagation()}>
+
+            {/* Close button */}
+            <button className="budget-modal-close" onClick={() => setShowModal(false)}>✕</button>
+
+            {/* Icon + title */}
+            <div className="budget-modal-top">
+              <div className="budget-modal-icon">🎯</div>
+              <h3 className="budget-modal-title">Set Monthly Budget</h3>
+              <p className="budget-modal-month">{MONTHS[selectedMonth-1]} {selectedYear}</p>
             </div>
-            <div className="modal-body">
-              <label className="form-label-hbm">Monthly Budget (Rs.)</label>
+
+            {/* Input */}
+            <div className="budget-modal-input-wrap">
+              <span className="budget-modal-prefix">Rs.</span>
               <input
                 type="number"
-                className="form-control-hbm"
-                placeholder="e.g. 50000"
+                className="budget-modal-input"
+                placeholder="0"
                 value={tempBudget}
                 onChange={e => setTempBudget(e.target.value)}
                 autoFocus
                 min="0"
-                step="0.01"
+                step="1"
               />
-              <p style={{ fontSize: '0.78rem', color: 'var(--gray-400)', marginTop: 8 }}>
-                This budget applies only to {MONTHS[selectedMonth-1]} {selectedYear}.
+            </div>
+
+            {tempBudget && parseFloat(tempBudget) > 0 && (
+              <p className="budget-modal-hint">
+                That's Rs. {fmt(parseFloat(tempBudget) / 30)} per day
               </p>
-            </div>
-            <div className="modal-footer">
+            )}
+
+            {/* Actions */}
+            <div className="budget-modal-actions">
+              <button className="budget-modal-save" onClick={saveBudget}>
+                Save Budget
+              </button>
               {budget && (
-                <button className="btn-danger-hbm" onClick={clearBudget}>Clear</button>
+                <button className="budget-modal-clear" onClick={clearBudget}>
+                  Remove Budget
+                </button>
               )}
-              <button className="btn-ghost-hbm" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="btn-primary-hbm" onClick={saveBudget}>Save Budget</button>
             </div>
+
           </div>
         </div>
       )}

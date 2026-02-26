@@ -188,12 +188,13 @@
   padding: 14px 16px;
 }
 
-/* ── Modal ── */
+/* ── Budget Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17,24,39,0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(17,24,39,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -201,60 +202,153 @@
   padding: 16px;
 }
 
-.modal-box {
+.budget-modal {
   background: #fff;
-  border-radius: var(--radius-xl);
+  border-radius: 24px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
+  max-width: 360px;
+  padding: 32px 28px 28px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.1);
+  position: relative;
+  text-align: center;
 }
 
-.modal-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--gray-100);
-}
-
-.modal-title {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--gray-900);
-  margin: 0;
-}
-
-.modal-subtitle {
-  font-size: 0.8rem;
-  color: var(--gray-400);
-  margin: 3px 0 0;
-}
-
-.modal-close {
-  background: var(--gray-100);
-  border: none;
-  width: 28px; height: 28px;
+.budget-modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 30px; height: 30px;
   border-radius: 50%;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-400);
   font-size: 0.75rem;
-  color: var(--gray-500);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s;
+  transition: all 0.15s;
+}
+.budget-modal-close:hover { background: var(--gray-200); color: var(--gray-600); }
+
+.budget-modal-top { margin-bottom: 24px; }
+
+.budget-modal-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 12px;
 }
 
-.modal-close:hover { background: var(--gray-200); }
+.budget-modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
 
-.modal-body { padding: 20px; }
+.budget-modal-month {
+  font-size: 0.82rem;
+  color: var(--gray-400);
+  margin: 0;
+  font-weight: 500;
+}
 
-.modal-footer {
+/* Big Rs. input */
+.budget-modal-input-wrap {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 16px 20px;
-  border-top: 1px solid var(--gray-100);
+  align-items: center;
   background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 14px 20px;
+  gap: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  margin-bottom: 10px;
+}
+
+.budget-modal-input-wrap:focus-within {
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+  background: #fff;
+}
+
+.budget-modal-prefix {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-400);
+  flex-shrink: 0;
+}
+
+.budget-modal-input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+  width: 100%;
+  text-align: right;
+}
+
+.budget-modal-input::placeholder { color: var(--gray-300); }
+
+/* Remove number input arrows */
+.budget-modal-input::-webkit-outer-spin-button,
+.budget-modal-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.budget-modal-input[type=number] { -moz-appearance: textfield; }
+
+.budget-modal-hint {
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  margin: 0 0 20px;
+}
+
+/* Action buttons */
+.budget-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.budget-modal-save {
+  width: 100%;
+  padding: 14px;
+  background: var(--brand-600);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.budget-modal-save:hover {
+  background: var(--brand-700);
+  box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+  transform: translateY(-1px);
+}
+
+.budget-modal-clear {
+  width: 100%;
+  padding: 11px;
+  background: none;
+  color: var(--danger-500);
+  border: 1.5px solid #fecaca;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.budget-modal-clear:hover {
+  background: var(--danger-50);
+  border-color: var(--danger-500);
 }
 
 /* ── Responsive ── */

@@ -37,8 +37,7 @@ const Navbar = () => {
                 className={`nav-link ${isActive(item.path) ? 'active' : ''} ${item.isAdd ? 'nav-link-add' : ''}`}
                 onClick={() => navigate(item.path)}
               >
-                {item.isAdd && <span className="add-icon">+</span>}
-                {!item.isAdd && item.label}
+                {item.isAdd ? <><span className="add-icon">+</span> Add Bill</> : item.label}
               </button>
             ))}
           </div>
