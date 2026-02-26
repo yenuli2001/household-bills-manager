@@ -1,252 +1,221 @@
 import React, { useState } from 'react';
-import { Form, Button, Card, Alert, Row, Col, Badge } from 'react-bootstrap';
 import { billService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import './Addbill.css';
 
-const AddBill = () => {
+const BILL_TYPES = [
+  { value: 'ELECTRICITY',    label: 'Electricity',    icon: '⚡' },
+  { value: 'WATER',          label: 'Water',          icon: '💧' },
+  { value: 'GROCERY',        label: 'Grocery',        icon: '🛒' },
+  { value: 'BANKING',        label: 'Banking',        icon: '🏦' },
+  { value: 'LOAN',           label: 'Loan Payment',   icon: '💰' },
+  { value: 'CREDIT_CARD',    label: 'Credit Card',    icon: '💳' },
+  { value: 'PHONE',          label: 'Phone Bill',     icon: '📱' },
+  { value: 'WIFI',           label: 'WiFi',           icon: '🌐' },
+  { value: 'FUEL',           label: 'Fuel',           icon: '⛽' },
+  { value: 'VEHICLE_REPAIR', label: 'Vehicle Repair', icon: '🔧' },
+  { value: 'OTHER',          label: 'Other',          icon: '📦' },
+];
+
+function fmt(n) {
+  return parseFloat(n || 0).toFixed(2);
+}
+
+export default function AddBill() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     bill_type: 'ELECTRICITY',
     amount: '',
     discount: '0',
     date: new Date().toISOString().split('T')[0],
-    description: ''
+    description: '',
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
 
-  const billTypeIcons = {
-    'ELECTRICITY': '⚡',
-    'WATER': '💧',
-    'GROCERY': '🛒',
-    'BANKING': '🏦',
-    'LOAN': '💰',
-    'CREDIT_CARD': '💳',
-    'PHONE': '📱',
-    'WIFI': '🌐',
-    'FUEL': '⛽',
-    'VEHICLE_REPAIR': '🔧',
-    'OTHER': '📦'
-  };
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const billTypeNames = {
-    'ELECTRICITY': 'Electricity Bill',
-    'WATER': 'Water Bill',
-    'GROCERY': 'Grocery Shopping',
-    'BANKING': 'Banking Charges',
-    'LOAN': 'Loan Payment',
-    'CREDIT_CARD': 'Credit Card Payment',
-    'PHONE': 'Phone Bill',
-    'WIFI': 'WiFi Bill',
-    'FUEL': 'Fuel Expense',
-    'VEHICLE_REPAIR': 'Vehicle Repairs',
-    'OTHER': 'Other Expenses'
-  };
+  const amount   = parseFloat(form.amount) || 0;
+  const discount = parseFloat(form.discount) || 0;
+  const discAmt  = (amount * discount) / 100;
+  const finalAmt = amount - discAmt;
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const selectedMeta = BILL_TYPES.find(t => t.value === form.bill_type);
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
+    if (!form.amount || parseFloat(form.amount) <= 0) {
+      setError('Please enter a valid amount.');
+      return;
+    }
+    setLoading(true); setError('');
     try {
       await billService.createBill({
-        ...formData,
-        amount: parseFloat(formData.amount),
-        discount: parseFloat(formData.discount)
+        ...form,
+        amount: parseFloat(form.amount),
+        discount: parseFloat(form.discount),
       });
       navigate('/bills');
-    } catch (err) {
+    } catch {
       setError('Failed to add expense. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateFinalAmount = () => {
-    const amount = parseFloat(formData.amount) || 0;
-    const discount = parseFloat(formData.discount) || 0;
-    const discountAmount = (amount * discount) / 100;
-    return (amount - discountAmount).toFixed(2);
-  };
+  }
 
   return (
-    <div style={{ paddingTop: '80px' }}>
-      <Row className="justify-content-center">
-        <Col md={8} lg={6}>
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white border-0 py-3">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                  <i className="fas fa-receipt text-primary"></i>
+    <div className="page-wrapper animate-fade-up">
+      <div className="addbill-layout">
+
+        {/* ── Form Card ── */}
+        <div className="hbm-card addbill-card">
+          <div className="card-header-clean">
+            <div>
+              <h1 className="page-heading" style={{ fontSize: '1.4rem' }}>Add Expense</h1>
+              <p className="page-subheading">Record a new bill or expense</p>
+            </div>
+            <button className="btn-ghost-hbm" onClick={() => navigate('/bills')}>
+              ← Back
+            </button>
+          </div>
+
+          <form className="card-body-clean addbill-form" onSubmit={handleSubmit}>
+
+            {error && <div className="alert-hbm error"><span>⚠</span> {error}</div>}
+
+            {/* Type grid selector */}
+            <div>
+              <label className="form-label-hbm">Expense Type</label>
+              <div className="type-grid">
+                {BILL_TYPES.map(t => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    className={`type-btn ${form.bill_type === t.value ? 'selected' : ''}`}
+                    onClick={() => set('bill_type', t.value)}
+                  >
+                    <span className="type-btn-icon">{t.icon}</span>
+                    <span className="type-btn-label">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Amount + Discount */}
+            <div className="form-row-2">
+              <div>
+                <label className="form-label-hbm">Amount (Rs.)</label>
+                <input
+                  type="number"
+                  className="form-control-hbm"
+                  placeholder="0.00"
+                  value={form.amount}
+                  onChange={e => set('amount', e.target.value)}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label-hbm">Discount (%)</label>
+                <input
+                  type="number"
+                  className="form-control-hbm"
+                  placeholder="0"
+                  value={form.discount}
+                  onChange={e => set('discount', e.target.value)}
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
+              </div>
+            </div>
+
+            {/* Date */}
+            <div>
+              <label className="form-label-hbm">Date</label>
+              <input
+                type="date"
+                className="form-control-hbm"
+                value={form.date}
+                onChange={e => set('date', e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="form-label-hbm">Description <span style={{ fontWeight: 400, textTransform: 'none', color: 'var(--gray-400)' }}>(optional)</span></label>
+              <textarea
+                className="form-control-hbm"
+                rows={3}
+                placeholder="Add a note about this expense…"
+                value={form.description}
+                onChange={e => set('description', e.target.value)}
+                style={{ resize: 'vertical', minHeight: 80 }}
+              />
+            </div>
+
+            {/* Submit */}
+            <button className="btn-primary-hbm submit-btn" type="submit" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-hbm" style={{ width: 16, height: 16, borderWidth: 2 }}></span>
+                  Saving…
+                </>
+              ) : (
+                <> + Save Expense</>
+              )}
+            </button>
+          </form>
+        </div>
+
+        {/* ── Preview Card ── */}
+        <div className="addbill-preview">
+          <div className="hbm-card preview-card">
+            <div className="card-header-clean">
+              <div className="section-title">📋 Preview</div>
+            </div>
+            <div className="card-body-clean">
+              <div className="preview-type-row">
+                <span className="preview-icon">{selectedMeta?.icon}</span>
+                <span className="preview-type-name">{selectedMeta?.label}</span>
+              </div>
+
+              <div className="preview-amounts">
+                <div className="preview-row">
+                  <span className="preview-row-label">Original Amount</span>
+                  <span className="preview-row-value">Rs. {fmt(amount)}</span>
                 </div>
-                <div>
-                  <h4 className="mb-0">Add New Expense</h4>
-                  <small className="text-muted">Track your household expenses</small>
+                {discount > 0 && (
+                  <div className="preview-row">
+                    <span className="preview-row-label">Discount ({discount}%)</span>
+                    <span className="preview-row-value" style={{ color: 'var(--success-600)' }}>- Rs. {fmt(discAmt)}</span>
+                  </div>
+                )}
+                <div className="preview-divider"></div>
+                <div className="preview-row final">
+                  <span>Final Amount</span>
+                  <span style={{ color: 'var(--brand-600)', fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.25rem' }}>
+                    Rs. {fmt(finalAmt)}
+                  </span>
                 </div>
               </div>
-            </Card.Header>
-            <Card.Body className="p-4">
-              {error && (
-                <Alert variant="danger" className="d-flex align-items-center">
-                  <i className="fas fa-exclamation-circle me-2"></i>
-                  {error}
-                </Alert>
-              )}
-              
-              <Form onSubmit={handleSubmit}>
-                {/* Bill Type */}
-                <Form.Group className="mb-4">
-                  <Form.Label className="fw-semibold">💰 Expense Type</Form.Label>
-                  <Form.Select 
-                    name="bill_type" 
-                    value={formData.bill_type}
-                    onChange={handleChange}
-                    required
-                    className="py-2"
-                  >
-                    {Object.entries(billTypeNames).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {billTypeIcons[value]} {label}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
 
-                <Row>
-                  <Col md={8}>
-                    {/* Amount */}
-                    <Form.Group className="mb-4">
-                      <Form.Label className="fw-semibold">💵 Amount (Rs.)</Form.Label>
-                      <Form.Control
-                        type="number"
-                        step="0.01"
-                        name="amount"
-                        value={formData.amount}
-                        onChange={handleChange}
-                        required
-                        min="0"
-                        placeholder="Enter amount in rupees"
-                        className="py-2"
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    {/* Discount */}
-                    <Form.Group className="mb-4">
-                      <Form.Label className="fw-semibold">🎯 Discount (%)</Form.Label>
-                      <Form.Control
-                        type="number"
-                        step="0.1"
-                        name="discount"
-                        value={formData.discount}
-                        onChange={handleChange}
-                        min="0"
-                        max="100"
-                        placeholder="0"
-                        className="py-2"
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                {/* Date */}
-                <Form.Group className="mb-4">
-                  <Form.Label className="fw-semibold">📅 Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    required
-                    className="py-2"
-                  />
-                </Form.Group>
-
-                {/* Description */}
-                <Form.Group className="mb-4">
-                  <Form.Label className="fw-semibold">
-                    <i className="fas fa-file-alt me-2"></i>
-                    Description (Optional)
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Add any notes about this expense..."
-                    className="py-2"
-                  />
-                </Form.Group>
-
-                {/* Calculation Preview */}
-                <Card className="mb-4 border-0 bg-light">
-                  <Card.Body className="p-3">
-                    <h6 className="mb-3">📊 Calculation Preview</h6>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="text-muted">Original Amount:</span>
-                      <span>Rs. {formData.amount || '0.00'}</span>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="text-muted">Discount ({formData.discount}%):</span>
-                      <span className="text-success">
-                        - Rs. {((parseFloat(formData.amount) || 0) * (parseFloat(formData.discount) || 0) / 100).toFixed(2)}
-                      </span>
-                    </div>
-                    <hr className="my-2" />
-                    <div className="d-flex justify-content-between align-items-center">
-                      <strong>Final Amount:</strong>
-                      <strong className="text-primary fs-5">
-                        Rs. {calculateFinalAmount()}
-                      </strong>
-                    </div>
-                  </Card.Body>
-                </Card>
-
-                {/* Submit Button */}
-                <div className="d-grid gap-2">
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
-                    disabled={loading}
-                    size="lg"
-                    className="py-2 fw-semibold"
-                  >
-                    {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Adding Expense...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-plus-circle me-2"></i>
-                        Add Expense
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    variant="outline-secondary" 
-                    onClick={() => navigate('/bills')}
-                    className="py-2"
-                  >
-                    <i className="fas fa-arrow-left me-2"></i>
-                    Back to Expenses
-                  </Button>
+              {discount > 0 && amount > 0 && (
+                <div className="preview-savings">
+                  🎉 You save Rs. {fmt(discAmt)} with this discount!
                 </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+              )}
+
+              <div className="preview-date">
+                📅 {form.date ? new Date(form.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
-};
-
-export default AddBill;
+}

@@ -1,509 +1,340 @@
-/* Container */
-.reports-container {
-  padding-top: 80px;
-  padding-bottom: 20px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
+/* Reports */
 
-/* Header */
-.reports-header {
+.rpt-header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
+  gap: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-.page-title {
-  font-size: 1.75rem;
-  margin-bottom: 0.25rem;
+.rpt-header-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
-.page-subtitle {
-  color: #6c757d;
-  margin-bottom: 0;
-  font-size: 0.95rem;
+.rpt-select {
+  width: auto;
+  min-width: 110px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
 }
 
-.year-selector {
-  min-width: 120px;
+/* ── Tabs ── */
+.rpt-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 20px;
+  width: fit-content;
 }
 
-.year-select {
+.rpt-tab {
+  padding: 9px 20px;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
   font-weight: 600;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
 
-/* Metric Cards */
-.metric-card {
-  transition: transform 0.2s;
+.rpt-tab:hover { color: var(--gray-700); background: var(--gray-200); }
+
+.rpt-tab.active {
+  background: #fff;
+  color: var(--brand-600);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
-.metric-card:hover {
-  transform: translateY(-2px);
+.rpt-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.metric-icon {
-  font-size: 2rem;
+/* ── Metric grid ── */
+.rpt-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
 }
 
-.metric-value {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+.rpt-metric-card {
+  padding: 18px 16px;
+  text-align: center;
 }
 
-.metric-label {
-  font-size: 0.85rem;
-}
+.rpt-metric-icon { font-size: 1.5rem; margin-bottom: 8px; }
 
-/* Chart Cards */
-.chart-card,
-.budget-card,
-.breakdown-card {
-  overflow: hidden;
-}
-
-.chart-header {
-  background-color: #fff;
-}
-
-.chart-title {
-  font-size: 1.1rem;
-}
-
-.chart-body,
-.budget-body {
-  padding: 1.25rem;
-}
-
-.chart-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-/* Budget Card */
-.budget-status-title {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.budget-amount {
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: #212529;
-}
-
-.budget-label {
+.rpt-metric-value {
   font-size: 1rem;
-  color: #6c757d;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
 }
 
-.budget-details small {
-  font-size: 0.8rem;
+.rpt-metric-label {
+  font-size: 0.7rem;
+  color: var(--gray-400);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.budget-usage {
-  font-size: 0.8rem;
-  display: block;
-  margin-top: 0.25rem;
+/* Chart hint legend */
+.rpt-chart-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  flex-wrap: wrap;
 }
 
-.savings-badge {
-  font-size: 0.9rem;
-  padding: 0.4rem 0.75rem;
+.rpt-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 2px;
 }
 
-.savings-amount {
-  font-size: 1.5rem;
-  margin: 0.5rem 0;
+/* ── Budget row ── */
+.rpt-budget-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-.savings-text {
-  font-size: 0.85rem;
+.rpt-budget-box {
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
 }
 
-/* Empty States */
-.empty-chart,
-.empty-budget {
-  padding: 3rem 1rem;
+.rpt-budget-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
-.empty-chart i,
-.empty-budget i {
-  opacity: 0.5;
+.rpt-budget-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  color: var(--gray-900);
 }
 
-/* Breakdown Table */
-.desktop-breakdown {
-  display: block;
+/* ── Pie layout ── */
+.rpt-pie-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 0;
+  align-items: start;
 }
 
-.mobile-breakdown {
-  display: none;
+.rpt-pie-chart { }
+
+/* Legend */
+.rpt-pie-legend {
+  padding: 16px 20px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
-.color-dot {
-  width: 12px;
-  height: 12px;
+.rpt-legend-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--gray-50);
+}
+
+.rpt-legend-dot {
+  width: 10px; height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-/* ============================================
-   MOBILE STYLES (< 768px)
-   ============================================ */
+.rpt-legend-name { color: var(--gray-700); }
 
-@media (max-width: 767.98px) {
-  /* Container */
-  .reports-container {
-    padding-top: 70px;
-    padding-left: 10px;
-    padding-right: 10px;
+.rpt-legend-amount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--gray-800);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.rpt-legend-pct {
+  font-weight: 700;
+  color: var(--gray-400);
+  font-size: 0.75rem;
+  text-align: right;
+  min-width: 32px;
+}
+
+.rpt-legend-total {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--gray-800);
+  padding-top: 6px;
+  border-top: 2px solid var(--gray-200);
+  margin-top: 2px;
+}
+
+/* ── Month Cards ── */
+.rpt-month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.rpt-month-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.rpt-month-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.rpt-month-card.current {
+  border-color: var(--brand-400);
+  background: #f0f6ff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.rpt-month-card.empty {
+  background: var(--gray-50);
+  border-color: var(--gray-100);
+}
+
+.rpt-month-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.rpt-month-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rpt-month-spent {
+  font-size: 1.1rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.rpt-month-progress {
+  height: 5px;
+  background: var(--gray-100);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 7px;
+}
+
+.rpt-month-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.rpt-month-bar.ok   { background: #22c55e; }
+.rpt-month-bar.warn { background: #f59e0b; }
+.rpt-month-bar.over { background: #ef4444; }
+
+.rpt-month-budget-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+}
+
+.rpt-month-empty {
+  font-size: 0.75rem;
+  color: var(--gray-300);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Tooltip */
+.rpt-tooltip {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .rpt-pie-layout {
+    grid-template-columns: 1fr;
   }
-
-  /* Header */
-  .reports-header {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    gap: 0.75rem;
-  }
-
-  .header-content {
-    width: 100%;
-  }
-
-  .page-title {
-    font-size: 1.5rem;
-  }
-
-  .page-subtitle {
-    font-size: 0.85rem;
-  }
-
-  .year-selector {
-    width: 100%;
-  }
-
-  .year-select {
-    width: 100%;
-  }
-
-  /* Metric Cards */
-  .metric-card .card-body {
-    padding: 0.75rem !important;
-  }
-
-  .metric-icon {
-    font-size: 1.5rem;
-  }
-
-  .metric-icon i {
-    font-size: 1.5rem;
-  }
-
-  .metric-value {
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .metric-label {
-    font-size: 0.7rem;
-  }
-
-  /* Chart Cards */
-  .chart-header {
-    padding: 0.75rem !important;
-  }
-
-  .chart-title {
-    font-size: 0.95rem;
-  }
-
-  .chart-title i {
-    font-size: 0.9rem;
-  }
-
-  .chart-body,
-  .budget-body {
-    padding: 0.75rem !important;
-  }
-
-  .chart-wrapper {
-    margin: 0 -0.75rem;
-    padding: 0 0.75rem;
-  }
-
-  /* Budget Card */
-  .budget-status {
-    margin-bottom: 1rem !important;
-  }
-
-  .budget-status-title {
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .budget-amount {
-    font-size: 1.3rem;
-  }
-
-  .budget-label {
-    font-size: 0.85rem;
-  }
-
-  .budget-details {
-    flex-wrap: wrap;
-    gap: 0.25rem;
-  }
-
-  .budget-details small {
-    font-size: 0.7rem;
-  }
-
-  .budget-usage {
-    font-size: 0.7rem;
-  }
-
-  .savings-box {
-    padding: 0.75rem !important;
-  }
-
-  .savings-badge {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
-  }
-
-  .savings-amount {
-    font-size: 1.1rem;
-    margin: 0.35rem 0;
-  }
-
-  .savings-text {
-    font-size: 0.75rem;
-  }
-
-  /* Empty States */
-  .empty-chart,
-  .empty-budget {
-    padding: 2rem 0.5rem;
-  }
-
-  .empty-chart i,
-  .empty-budget i {
-    font-size: 1.5rem !important;
-  }
-
-  .empty-chart p,
-  .empty-budget p {
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .empty-budget h6 {
-    font-size: 0.95rem;
-  }
-
-  /* Breakdown - Hide Table, Show Cards */
-  .desktop-breakdown {
-    display: none;
-  }
-
-  .mobile-breakdown {
-    display: block;
-    padding: 0.5rem;
-  }
-
-  .breakdown-item {
-    padding: 0.75rem;
-    border-bottom: 1px solid #e9ecef;
-  }
-
-  .breakdown-item:last-of-type {
-    border-bottom: none;
-  }
-
-  .color-dot-mobile {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .category-name-mobile {
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .amount-mobile {
-    font-size: 0.95rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .percentage-badge {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.4rem;
-  }
-
-  .breakdown-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background-color: #f8f9fa;
-    border-top: 2px solid #dee2e6;
-    font-size: 0.95rem;
-  }
-
-  .total-amount-mobile {
-    font-size: 1rem;
+  .rpt-pie-legend {
+    padding: 0 20px 16px;
   }
 }
 
-/* ============================================
-   TABLET STYLES (768px - 991px)
-   ============================================ */
+@media (max-width: 768px) {
+  .page-wrapper { padding-bottom: 88px; }
 
-@media (min-width: 768px) and (max-width: 991.98px) {
-  .page-title {
-    font-size: 1.6rem;
-  }
+  .rpt-header { flex-direction: column; }
+  .rpt-header-controls { width: 100%; }
+  .rpt-select { flex: 1; }
 
-  .metric-value {
-    font-size: 1.3rem;
-  }
+  .rpt-tabs { width: 100%; }
+  .rpt-tab  { flex: 1; text-align: center; padding: 9px 8px; font-size: 0.8rem; }
 
-  .budget-amount {
-    font-size: 1.5rem;
-  }
+  .rpt-metric-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .rpt-metric-value { font-size: 0.88rem; }
+  .rpt-month-grid { grid-template-columns: repeat(2, 1fr); }
 
-  .chart-title {
-    font-size: 1rem;
-  }
+  .rpt-budget-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .rpt-budget-value { font-size: 0.9rem; }
 }
 
-/* ============================================
-   SMALL MOBILE (< 576px)
-   ============================================ */
-
-@media (max-width: 575.98px) {
-  .reports-container {
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  .page-title {
-    font-size: 1.3rem;
-  }
-
-  .metric-card .card-body {
-    padding: 0.6rem !important;
-  }
-
-  .metric-icon {
-    font-size: 1.25rem;
-  }
-
-  .metric-icon i {
-    font-size: 1.25rem;
-  }
-
-  .metric-value {
-    font-size: 0.95rem;
-  }
-
-  .metric-label {
-    font-size: 0.65rem;
-  }
-
-  .chart-header {
-    padding: 0.6rem !important;
-  }
-
-  .chart-title {
-    font-size: 0.85rem;
-  }
-
-  .chart-body,
-  .budget-body {
-    padding: 0.6rem !important;
-  }
-
-  .budget-status-title {
-    font-size: 1rem;
-  }
-
-  .budget-amount {
-    font-size: 1.1rem;
-  }
-
-  .budget-label {
-    font-size: 0.75rem;
-  }
-
-  .budget-details small {
-    font-size: 0.65rem;
-  }
-
-  .savings-amount {
-    font-size: 1rem;
-  }
-
-  .category-name-mobile {
-    font-size: 0.8rem;
-  }
-
-  .amount-mobile {
-    font-size: 0.85rem;
-  }
-
-  .breakdown-total {
-    font-size: 0.85rem;
-    padding: 0.6rem;
-  }
-
-  .total-amount-mobile {
-    font-size: 0.9rem;
-  }
-}
-
-/* ============================================
-   LANDSCAPE MOBILE
-   ============================================ */
-
-@media (max-height: 500px) and (orientation: landscape) {
-  .reports-container {
-    padding-top: 60px;
-  }
-
-  .reports-header {
-    margin-bottom: 1rem;
-  }
-
-  .metric-card .card-body {
-    padding: 0.5rem !important;
-  }
-
-  .empty-chart,
-  .empty-budget {
-    padding: 1.5rem 0.5rem;
-  }
-}
-
-/* ============================================
-   HOVER EFFECTS (Desktop Only)
-   ============================================ */
-
-@media (min-width: 768px) {
-  .metric-card:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-  }
-
-  .chart-card:hover,
-  .budget-card:hover,
-  .breakdown-card:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s;
-  }
+@media (max-width: 480px) {
+  .rpt-budget-row { grid-template-columns: 1fr 1fr; }
+  .rpt-budget-row > :last-child { grid-column: 1 / -1; }
+  .rpt-metric-value { font-size: 0.82rem; }
+  .rpt-metric-label { font-size: 0.65rem; }
 }

@@ -3,69 +3,77 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
-const Login = () => {
+export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
   const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const result = await login(username, password);
-    
-    if (!result.success) {
-      setError(result.error);
-    }
-    
+    setError(''); setLoading(true);
+    const r = await login(username, password);
+    if (!r.success) setError(r.error);
     setLoading(false);
-  };
+  }
 
   return (
-    <div className="auth-container">
+    <div className="auth-page">
       <div className="auth-card">
-        <h2>Login to Household Bills Manager</h2>
-        
-        {error && <div className="error-message">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              autoFocus
-            />
+        <div className="auth-card-top">
+          <div className="auth-brand">🏠</div>
+          <h1 className="auth-title">Bills Manager</h1>
+          <p className="auth-subtitle">Sign in to your account</p>
+        </div>
+
+        <div className="auth-card-body">
+          {error && (
+            <div className="auth-error">
+              <span>⚠</span> {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="auth-field">
+              <label className="auth-label">Username</label>
+              <input
+                type="text"
+                className="auth-input"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+                autoFocus
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label className="auth-label">Password</label>
+              <input
+                type="password"
+                className="auth-input"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                autoComplete="current-password"
+              />
+            </div>
+
+            <button type="submit" className="auth-submit" disabled={loading}>
+              {loading ? (
+                <><span className="auth-spinner"></span> Signing in…</>
+              ) : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            Don't have an account? <Link to="/register">Create one</Link>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>Don't have an account? <Link to="/register">Register here</Link></p>
         </div>
       </div>
     </div>
   );
-};
-
-export default Login;
+}

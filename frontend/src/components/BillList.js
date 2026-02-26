@@ -1,348 +1,275 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Card, Alert, Badge, Row, Col, Form } from 'react-bootstrap';
 import { billService } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './BillList.css';
 
-const BillList = () => {
+const BILL_TYPE_META = {
+  ELECTRICITY:    { label: 'Electricity',    icon: '⚡', color: '#3b82f6', bg: '#eff6ff' },
+  WATER:          { label: 'Water',          icon: '💧', color: '#06b6d4', bg: '#ecfeff' },
+  GROCERY:        { label: 'Grocery',        icon: '🛒', color: '#22c55e', bg: '#f0fdf4' },
+  BANKING:        { label: 'Banking',        icon: '🏦', color: '#8b5cf6', bg: '#f5f3ff' },
+  LOAN:           { label: 'Loan',           icon: '💰', color: '#f59e0b', bg: '#fffbeb' },
+  CREDIT_CARD:    { label: 'Credit Card',    icon: '💳', color: '#ef4444', bg: '#fef2f2' },
+  PHONE:          { label: 'Phone',          icon: '📱', color: '#3b82f6', bg: '#eff6ff' },
+  WIFI:           { label: 'WiFi',           icon: '🌐', color: '#06b6d4', bg: '#ecfeff' },
+  FUEL:           { label: 'Fuel',           icon: '⛽', color: '#f97316', bg: '#fff7ed' },
+  VEHICLE_REPAIR: { label: 'Vehicle Repairs',icon: '🔧', color: '#f59e0b', bg: '#fffbeb' },
+  OTHER:          { label: 'Other',          icon: '📦', color: '#6b7280', bg: '#f9fafb' },
+};
+
+const BILL_TYPES = Object.keys(BILL_TYPE_META);
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function fmt(n) {
+  return parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export default function BillList() {
   const navigate = useNavigate();
-  const [bills, setBills] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [searchParams] = useSearchParams();
 
-  const billTypeIcons = {
-    'ELECTRICITY': '⚡',
-    'WATER': '💧',
-    'GROCERY': '🛒',
-    'BANKING': '🏦',
-    'LOAN': '💰',
-    'CREDIT_CARD': '💳',
-    'PHONE': '📱',
-    'WIFI': '🌐',
-    'FUEL': '⛽',
-    'VEHICLE_REPAIR': '🔧',
-    'OTHER': '📦'
-  };
+  const [bills, setBills]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState('');
+  const [selectedMonth, setMonth] = useState(
+    searchParams.get('month') ? parseInt(searchParams.get('month')) : new Date().getMonth() + 1
+  );
+  const [selectedYear, setYear]   = useState(
+    searchParams.get('year') ? parseInt(searchParams.get('year')) : new Date().getFullYear()
+  );
+  const [highlight, setHighlight] = useState(searchParams.get('category') || null);
 
-  const billTypeColors = {
-    'ELECTRICITY': 'primary',
-    'WATER': 'info',
-    'GROCERY': 'success',
-    'BANKING': 'secondary',
-    'LOAN': 'warning',
-    'CREDIT_CARD': 'dark',
-    'PHONE': 'primary',
-    'WIFI': 'info',
-    'FUEL': 'danger',
-    'VEHICLE_REPAIR': 'warning',
-    'OTHER': 'secondary'
-  };
+  useEffect(() => { fetchBills(); }, [selectedMonth, selectedYear]);
 
   useEffect(() => {
-    fetchBills();
-  }, [selectedMonth, selectedYear]);
+    if (highlight && bills.length > 0) {
+      const el = document.getElementById(`section-${highlight}`);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+    }
+  }, [bills, highlight]);
 
-  const fetchBills = async () => {
+  async function fetchBills() {
+    setLoading(true);
     try {
-      const response = await billService.getAllBills();
-      const allBills = response.data;
-      
-      const filteredBills = allBills.filter(bill => {
-        const billDate = new Date(bill.date);
-        return billDate.getMonth() + 1 === selectedMonth && 
-               billDate.getFullYear() === selectedYear;
+      const r = await billService.getAllBills();
+      const filtered = r.data.filter(b => {
+        const d = new Date(b.date);
+        return d.getMonth() + 1 === selectedMonth && d.getFullYear() === selectedYear;
       });
-      
-      setBills(filteredBills);
-    } catch (err) {
-      setError('Failed to fetch expenses');
-    } finally {
-      setLoading(false);
-    }
-  };
+      setBills(filtered);
+    } catch { setError('Failed to load expenses'); }
+    finally  { setLoading(false); }
+  }
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this expense?')) {
-      try {
-        await billService.deleteBill(id);
-        fetchBills();
-      } catch (err) {
-        setError('Failed to delete expense');
-      }
-    }
-  };
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this expense?')) return;
+    try {
+      await billService.deleteBill(id);
+      fetchBills();
+    } catch { setError('Failed to delete expense'); }
+  }
 
-  const getMonthName = (monthNumber) => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[monthNumber - 1];
-  };
-
-  const calculateMonthlyTotal = () => {
-    return bills.reduce((total, bill) => total + parseFloat(bill.final_amount), 0);
-  };
-
-  const getBillsByType = (type) => {
-    return bills.filter(bill => bill.bill_type === type);
-  };
-
-  const billTypes = [
-    'ELECTRICITY', 'WATER', 'GROCERY', 'BANKING', 'LOAN', 
-    'CREDIT_CARD', 'PHONE', 'WIFI', 'FUEL', 'VEHICLE_REPAIR', 'OTHER'
-  ];
+  const monthTotal = bills.reduce((s, b) => s + parseFloat(b.final_amount), 0);
 
   if (loading) return (
-    <div className="text-center loading-container">
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
+    <div className="page-wrapper">
+      <div className="loading-state">
+        <div className="spinner-hbm"></div>
+        <p style={{ color: 'var(--gray-400)', fontSize: '0.875rem' }}>Loading expenses…</p>
       </div>
-      <p className="mt-2 text-muted">Loading your expenses...</p>
     </div>
   );
 
   return (
-    <div className="billlist-container">
-      {/* Header - Responsive */}
-      <div className="billlist-header">
-        <div className="header-content">
-          <h2 className="page-title">📋 All Expenses</h2>
-          <p className="page-subtitle">Manage and track your household expenses</p>
+    <div className="page-wrapper animate-fade-up">
+
+      {/* ── Header ── */}
+      <div className="bl-header">
+        <div>
+          <h1 className="page-heading">All Expenses</h1>
+          <p className="page-subheading">
+            {bills.length} {bills.length === 1 ? 'expense' : 'expenses'} in {MONTHS[selectedMonth-1]} {selectedYear}
+            {highlight && (
+              <span
+                className="highlight-badge"
+                onClick={() => setHighlight(null)}
+                title="Click to clear"
+              >
+                {BILL_TYPE_META[highlight]?.icon} {BILL_TYPE_META[highlight]?.label} ✕
+              </span>
+            )}
+          </p>
         </div>
-        <Button 
-          onClick={() => navigate('/add-bill')} 
-          variant="primary" 
-          className="add-expense-btn"
-        >
-          <i className="fas fa-plus-circle me-2"></i>
-          <span className="btn-text">Add Expense</span>
-        </Button>
+        <div className="bl-header-right">
+          <div className="bl-filters">
+            <select
+              className="form-select-hbm"
+              value={selectedMonth}
+              onChange={e => { setMonth(parseInt(e.target.value)); setHighlight(null); }}
+            >
+              {MONTHS.map((m,i) => <option key={i+1} value={i+1}>{m}</option>)}
+            </select>
+            <select
+              className="form-select-hbm"
+              value={selectedYear}
+              onChange={e => { setYear(parseInt(e.target.value)); setHighlight(null); }}
+            >
+              {[2023,2024,2025,2026].map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <button className="btn-primary-hbm" onClick={() => navigate('/add-bill')}>
+            <span>+</span> Add Expense
+          </button>
+        </div>
       </div>
 
-      {/* Month/Year Selector - Responsive */}
-      <Card className="mb-3 mb-md-4 border-0 shadow-sm month-selector-card">
-        <Card.Body className="py-3">
-          <Row className="align-items-center g-3">
-            <Col xs={12} md={8}>
-              <div className="month-info">
-                <div className="month-details">
-                  <h5 className="month-title">
-                    {getMonthName(selectedMonth)} {selectedYear}
-                  </h5>
-                  <small className="text-muted expense-count">
-                    {bills.length} expense{bills.length !== 1 ? 's' : ''} found
-                  </small>
-                </div>
-                <Badge bg="primary" className="total-badge">
-                  Total: Rs. {calculateMonthlyTotal().toFixed(2)}
-                </Badge>
-              </div>
-            </Col>
-            <Col xs={12} md={4}>
-              <div className="filter-controls">
-                <Form.Select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  size="sm"
-                  className="filter-select"
-                >
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {getMonthName(i + 1)}
-                    </option>
-                  ))}
-                </Form.Select>
-                <Form.Select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  size="sm"
-                  className="filter-select"
-                >
-                  {[2023, 2024, 2025, 2026].map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </Form.Select>
-              </div>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
-      {error && (
-        <Alert variant="danger" className="d-flex align-items-center alert-message">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          {error}
-        </Alert>
+      {/* Total strip */}
+      {bills.length > 0 && (
+        <div className="bl-total-strip">
+          <span style={{ color: 'var(--gray-500)', fontSize: '0.875rem' }}>Total for {MONTHS[selectedMonth-1]}</span>
+          <span className="amount-large" style={{ fontSize: '1.25rem', color: 'var(--gray-900)' }}>Rs. {fmt(monthTotal)}</span>
+        </div>
       )}
 
-      {/* Expenses by Category */}
-      {billTypes.map(billType => {
-        const typeBills = getBillsByType(billType);
-        const typeTotal = typeBills.reduce((total, bill) => total + parseFloat(bill.final_amount), 0);
-        
-        if (typeBills.length === 0) return null;
+      {error && <div className="alert-hbm error"><span>⚠</span> {error}</div>}
 
-        return (
-          <Card key={billType} className="mb-3 mb-md-4 border-0 shadow-sm category-card">
-            <Card.Header className="bg-white border-0 py-3 category-header">
-              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div className="d-flex align-items-center category-info">
-                  <span className="category-icon">{billTypeIcons[billType]}</span>
-                  <h5 className="category-name">{billType.replace('_', ' ')}</h5>
-                  <Badge bg={billTypeColors[billType]} className="item-count">
-                    {typeBills.length}
-                  </Badge>
+      {/* ── Bill Sections by Category ── */}
+      {bills.length === 0 ? (
+        <div className="hbm-card">
+          <div className="empty-state">
+            <div className="empty-icon">🧾</div>
+            <h5>No expenses in {MONTHS[selectedMonth-1]} {selectedYear}</h5>
+            <p>Add your first bill to start tracking this month's spending.</p>
+            <button className="btn-primary-hbm" style={{ marginTop: 12 }} onClick={() => navigate('/add-bill')}>
+              + Add Expense
+            </button>
+          </div>
+        </div>
+      ) : (
+        BILL_TYPES.map(type => {
+          const typeBills = bills.filter(b => b.bill_type === type);
+          if (typeBills.length === 0) return null;
+          const typeTotal = typeBills.reduce((s,b) => s + parseFloat(b.final_amount), 0);
+          const meta = BILL_TYPE_META[type];
+          const isHighlighted = highlight === type;
+
+          return (
+            <div
+              key={type}
+              id={`section-${type}`}
+              className={`hbm-card bill-section ${isHighlighted ? 'highlighted' : ''}`}
+            >
+              {/* Section header */}
+              <div className="bill-section-header" style={{ borderLeft: `3px solid ${meta.color}` }}>
+                <div className="bill-section-left">
+                  <div className="bill-type-icon" style={{ background: meta.bg }}>
+                    <span>{meta.icon}</span>
+                  </div>
+                  <div>
+                    <div className="bill-type-name">{meta.label}</div>
+                    <div className="bill-type-count">{typeBills.length} {typeBills.length === 1 ? 'entry' : 'entries'}</div>
+                  </div>
+                  {isHighlighted && (
+                    <span className="from-dash-badge">← From Dashboard</span>
+                  )}
                 </div>
-                <strong className="text-primary category-total">
-                  Rs. {typeTotal.toFixed(2)}
-                </strong>
+                <div className="bill-section-total" style={{ color: meta.color }}>
+                  Rs. {fmt(typeTotal)}
+                </div>
               </div>
-            </Card.Header>
-            <Card.Body className="p-0">
-              {/* Desktop Table View */}
-              <div className="table-responsive desktop-table">
-                <Table hover className="mb-0">
-                  <thead className="bg-light">
+
+              {/* Desktop Table */}
+              <div className="bl-table-wrap">
+                <table className="table-hbm">
+                  <thead>
                     <tr>
-                      <th width="120">Date</th>
-                      <th width="120">Amount</th>
-                      <th width="100">Discount</th>
-                      <th width="140">Final Amount</th>
+                      <th>Date</th>
+                      <th>Original</th>
+                      <th>Discount</th>
+                      <th>Final Amount</th>
                       <th>Description</th>
-                      <th width="100">Actions</th>
+                      <th style={{ width: 60 }}></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {typeBills.map((bill) => (
-                      <tr key={bill.id} className="align-middle">
+                    {typeBills.map(bill => (
+                      <tr key={bill.id}>
                         <td>
-                          <small className="text-muted">
-                            {new Date(bill.date).toLocaleDateString('en-US', {
-                              day: 'numeric',
-                              month: 'short'
-                            })}
-                          </small>
+                          <span className="bill-date">
+                            {new Date(bill.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </td>
+                        <td style={{ color: 'var(--gray-400)', fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }}>
+                          Rs. {fmt(bill.amount)}
                         </td>
                         <td>
-                          <span className="text-muted">Rs. {parseFloat(bill.amount).toFixed(2)}</span>
-                        </td>
-                        <td>
-                          {bill.discount > 0 ? (
-                            <Badge bg="success" className="discount-badge">
-                              {bill.discount}%
-                            </Badge>
+                          {parseFloat(bill.discount) > 0 ? (
+                            <span className="badge-hbm badge-green">{bill.discount}% off</span>
                           ) : (
-                            <span className="text-muted">-</span>
+                            <span style={{ color: 'var(--gray-300)' }}>—</span>
                           )}
                         </td>
                         <td>
-                          <strong className="text-dark">Rs. {parseFloat(bill.final_amount).toFixed(2)}</strong>
+                          <span className="amount-medium" style={{ fontSize: '0.95rem', color: 'var(--gray-900)' }}>
+                            Rs. {fmt(bill.final_amount)}
+                          </span>
+                        </td>
+                        <td style={{ color: 'var(--gray-400)', fontSize: '0.82rem', maxWidth: 200 }}>
+                          <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {bill.description || '—'}
+                          </span>
                         </td>
                         <td>
-                          <small className="text-muted">
-                            {bill.description || 'No description'}
-                          </small>
-                        </td>
-                        <td>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
+                          <button
+                            className="btn-danger-hbm"
                             onClick={() => handleDelete(bill.id)}
-                            title="Delete expense"
+                            title="Delete"
                           >
-                            <i className="fas fa-trash"></i>
-                          </Button>
+                            🗑
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                </Table>
+                </table>
               </div>
 
-              {/* Mobile Card View */}
-              <div className="mobile-bills">
-                {typeBills.map((bill) => (
-                  <div key={bill.id} className="bill-card">
-                    <div className="bill-card-header">
-                      <div className="bill-date">
-                        <i className="fas fa-calendar-alt me-1"></i>
-                        {new Date(bill.date).toLocaleDateString('en-US', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </div>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleDelete(bill.id)}
-                        className="delete-btn-mobile"
-                      >
-                        <i className="fas fa-trash"></i>
-                      </Button>
+              {/* Mobile Cards */}
+              <div className="bl-mobile-cards">
+                {typeBills.map(bill => (
+                  <div key={bill.id} className="mobile-bill-card">
+                    <div className="mobile-bill-top">
+                      <span className="bill-date">
+                        {new Date(bill.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <button className="btn-danger-hbm" onClick={() => handleDelete(bill.id)}>🗑</button>
                     </div>
-                    
-                    <div className="bill-card-body">
-                      <div className="bill-amount-row">
-                        <div className="amount-item">
-                          <small className="text-muted">Original</small>
-                          <div className="amount-value">Rs. {parseFloat(bill.amount).toFixed(2)}</div>
-                        </div>
-                        {bill.discount > 0 && (
-                          <div className="amount-item">
-                            <small className="text-muted">Discount</small>
-                            <Badge bg="success" className="discount-badge-mobile">
-                              {bill.discount}%
-                            </Badge>
-                          </div>
-                        )}
-                        <div className="amount-item">
-                          <small className="text-muted">Final</small>
-                          <div className="final-amount">Rs. {parseFloat(bill.final_amount).toFixed(2)}</div>
-                        </div>
+                    <div className="mobile-bill-amounts">
+                      <div className="mobile-amount-item">
+                        <div className="mobile-amount-label">Original</div>
+                        <div className="mobile-amount-value muted">Rs. {fmt(bill.amount)}</div>
                       </div>
-                      
-                      {bill.description && (
-                        <div className="bill-description">
-                          <small className="text-muted">{bill.description}</small>
+                      {parseFloat(bill.discount) > 0 && (
+                        <div className="mobile-amount-item">
+                          <div className="mobile-amount-label">Discount</div>
+                          <div><span className="badge-hbm badge-green">{bill.discount}% off</span></div>
                         </div>
                       )}
+                      <div className="mobile-amount-item">
+                        <div className="mobile-amount-label">Final</div>
+                        <div className="mobile-amount-value" style={{ color: meta.color }}>Rs. {fmt(bill.final_amount)}</div>
+                      </div>
                     </div>
+                    {bill.description && (
+                      <div className="mobile-bill-desc">{bill.description}</div>
+                    )}
                   </div>
                 ))}
               </div>
-            </Card.Body>
-          </Card>
-        );
-      })}
-
-      {/* No Expenses Message */}
-      {bills.length === 0 && (
-        <Card className="border-0 shadow-sm empty-state-card">
-          <Card.Body className="text-center py-5">
-            <div className="mb-3">
-              <i className="fas fa-receipt fa-3x text-muted"></i>
             </div>
-            <h5 className="empty-title">No expenses found for {getMonthName(selectedMonth)} {selectedYear}</h5>
-            <p className="text-muted mb-3 empty-text">
-              Start tracking your expenses by adding your first bill for this month.
-            </p>
-            <Button 
-              variant="primary" 
-              onClick={() => navigate('/add-bill')}
-              className="px-4"
-            >
-              <i className="fas fa-plus-circle me-2"></i>
-              Add Your First Expense
-            </Button>
-          </Card.Body>
-        </Card>
+          );
+        })
       )}
     </div>
   );
-};
-
-export default BillList;
+}

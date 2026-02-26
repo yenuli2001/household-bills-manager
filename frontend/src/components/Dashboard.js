@@ -1,455 +1,354 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Alert, Form, Badge, Button, Modal } from 'react-bootstrap';
 import { billService } from '../services/api';
-import './Dashboard.css'; // We'll create this file
+import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
 
-const Dashboard = () => {
-  const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [monthlyBudget, setMonthlyBudget] = useState(() => {
-    return localStorage.getItem('monthlyBudget') || '';
-  });
-  const [showBudgetModal, setShowBudgetModal] = useState(false);
+const CATEGORIES = [
+  { key: 'electricity',   label: 'Electricity',     icon: '⚡', color: '#3b82f6', bg: '#eff6ff' },
+  { key: 'water',         label: 'Water',            icon: '💧', color: '#06b6d4', bg: '#ecfeff' },
+  { key: 'grocery',       label: 'Grocery',          icon: '🛒', color: '#22c55e', bg: '#f0fdf4' },
+  { key: 'banking',       label: 'Banking',          icon: '🏦', color: '#8b5cf6', bg: '#f5f3ff' },
+  { key: 'loan',          label: 'Loan',             icon: '💰', color: '#f59e0b', bg: '#fffbeb' },
+  { key: 'credit_card',   label: 'Credit Card',      icon: '💳', color: '#ef4444', bg: '#fef2f2' },
+  { key: 'phone',         label: 'Phone',            icon: '📱', color: '#3b82f6', bg: '#eff6ff' },
+  { key: 'wifi',          label: 'WiFi',             icon: '🌐', color: '#06b6d4', bg: '#ecfeff' },
+  { key: 'fuel',          label: 'Fuel',             icon: '⛽', color: '#f97316', bg: '#fff7ed' },
+  { key: 'vehicle_repair',label: 'Vehicle Repairs',  icon: '🔧', color: '#f59e0b', bg: '#fffbeb' },
+  { key: 'other',         label: 'Other',            icon: '📦', color: '#6b7280', bg: '#f9fafb' },
+];
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const getBudgetKey = (m, y) => `monthlyBudget_${y}_${m}`;
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const [summary, setSummary]       = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState('');
+  const [selectedMonth, setMonth]   = useState(new Date().getMonth() + 1);
+  const [selectedYear, setYear]     = useState(new Date().getFullYear());
+  const [budget, setBudget]         = useState('');
+  const [showModal, setShowModal]   = useState(false);
   const [tempBudget, setTempBudget] = useState('');
 
   useEffect(() => {
-    fetchSummary();
+    const saved = localStorage.getItem(getBudgetKey(selectedMonth, selectedYear));
+    setBudget(saved || '');
   }, [selectedMonth, selectedYear]);
 
-  const fetchSummary = async () => {
+  useEffect(() => { fetchSummary(); }, [selectedMonth, selectedYear]);
+
+  async function fetchSummary() {
+    setLoading(true);
     try {
-      const response = await billService.getMonthlySummary(selectedMonth, selectedYear);
-      setSummary(response.data);
-    } catch (err) {
-      setError('Failed to fetch dashboard data');
-    } finally {
-      setLoading(false);
+      const r = await billService.getMonthlySummary(selectedMonth, selectedYear);
+      setSummary(r.data);
+    } catch { setError('Failed to load data'); }
+    finally  { setLoading(false); }
+  }
+
+  function saveBudget() {
+    const v = parseFloat(tempBudget);
+    if (!isNaN(v) && v >= 0) {
+      localStorage.setItem(getBudgetKey(selectedMonth, selectedYear), tempBudget);
+      setBudget(tempBudget);
+      setShowModal(false); setTempBudget('');
     }
-  };
+  }
 
-  const handleSaveBudget = () => {
-    const budgetValue = parseFloat(tempBudget);
-    if (!isNaN(budgetValue) && budgetValue >= 0) {
-      setMonthlyBudget(tempBudget);
-      localStorage.setItem('monthlyBudget', tempBudget);
-      setShowBudgetModal(false);
-      setTempBudget('');
-    }
-  };
+  function clearBudget() {
+    localStorage.removeItem(getBudgetKey(selectedMonth, selectedYear));
+    setBudget(''); setShowModal(false); setTempBudget('');
+  }
 
-  const handleClearBudget = () => {
-    setMonthlyBudget('');
-    localStorage.removeItem('monthlyBudget');
-    setShowBudgetModal(false);
-    setTempBudget('');
-  };
+  const total    = summary?.total_all || 0;
+  const budgetN  = budget ? parseFloat(budget) : null;
+  const remaining = budgetN ? budgetN - total : null;
+  const pct       = budgetN ? Math.min((total / budgetN) * 100, 100) : 0;
+  const isOver    = remaining !== null && remaining < 0;
 
-  const getMonthName = (monthNumber) => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[monthNumber - 1];
-  };
+  const topCategories = CATEGORIES
+    .map(c => ({ ...c, value: summary?.[`total_${c.key}`] || 0 }))
+    .filter(c => c.value > 0)
+    .sort((a,b) => b.value - a.value)
+    .slice(0, 3);
 
-  const calculateRemainingBudget = () => {
-    if (!monthlyBudget || !summary) return 0;
-    const budget = parseFloat(monthlyBudget);
-    const totalExpenses = summary.total_all || 0;
-    return budget - totalExpenses;
-  };
-
-  const calculateBudgetUsage = () => {
-    if (!monthlyBudget || !summary) return 0;
-    const budget = parseFloat(monthlyBudget);
-    const totalExpenses = summary.total_all || 0;
-    return (totalExpenses / budget) * 100;
-  };
-
-  const cardData = [
-    { title: '⚡ Electricity', value: summary?.total_electricity, color: 'primary', icon: '⚡' },
-    { title: '💧 Water', value: summary?.total_water, color: 'info', icon: '💧' },
-    { title: '🛒 Grocery', value: summary?.total_grocery, color: 'success', icon: '🛒' },
-    { title: '🏦 Banking', value: summary?.total_banking, color: 'secondary', icon: '🏦' },
-    { title: '💰 Loan Payment', value: summary?.total_loan, color: 'warning', icon: '💰' },
-    { title: '💳 Credit Card', value: summary?.total_credit_card, color: 'dark', icon: '💳' },
-    { title: '📱 Phone Bill', value: summary?.total_phone, color: 'primary', icon: '📱' },
-    { title: '🌐 WiFi Bill', value: summary?.total_wifi, color: 'info', icon: '🌐' },
-    { title: '⛽ Fuel', value: summary?.total_fuel, color: 'danger', icon: '⛽' },
-    { title: '🔧 Vehicle Repairs', value: summary?.total_vehicle_repair, color: 'warning', icon: '🔧' },
-    { title: '📦 Other Expenses', value: summary?.total_other, color: 'secondary', icon: '📦' },
-  ];
+  function fmt(n) {
+    return (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 
   if (loading) return (
-    <div className="text-center loading-container">
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
+    <div className="page-wrapper">
+      <div className="loading-state">
+        <div className="spinner-hbm"></div>
+        <p style={{ color: 'var(--gray-400)', fontSize: '0.875rem' }}>Loading dashboard…</p>
       </div>
-      <p className="mt-2 text-muted">Loading your expenses...</p>
     </div>
   );
-
-  if (error) return (
-    <div className="error-container">
-      <Alert variant="danger" className="d-flex align-items-center">
-        <i className="fas fa-exclamation-triangle me-2"></i>
-        {error}
-      </Alert>
-    </div>
-  );
-
-  const remainingBudget = calculateRemainingBudget();
-  const budgetUsage = calculateBudgetUsage();
 
   return (
-    <div className="dashboard-container">
-      {/* Header Section - Responsive */}
-      <div className="dashboard-header">
-        <div className="header-content">
-          <h2 className="dashboard-title">💰 Expense Dashboard</h2>
-          <p className="dashboard-subtitle">Track and manage your monthly expenses</p>
+    <div className="page-wrapper animate-fade-up">
+
+      {/* ── Header Row ── */}
+      <div className="dash-header">
+        <div>
+          <h1 className="page-heading">Dashboard</h1>
+          <p className="page-subheading">Your spending overview for {MONTHS[selectedMonth-1]} {selectedYear}</p>
         </div>
-        <div className="header-filters">
-          <Form.Select
+        <div className="dash-controls">
+          <select
+            className="form-select-hbm dash-select"
             value={selectedMonth}
-            onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-            size="sm"
-            className="filter-select"
+            onChange={e => setMonth(parseInt(e.target.value))}
           >
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {getMonthName(i + 1)}
-              </option>
-            ))}
-          </Form.Select>
-          <Form.Select
+            {MONTHS.map((m,i) => <option key={i+1} value={i+1}>{m}</option>)}
+          </select>
+          <select
+            className="form-select-hbm dash-select"
             value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            size="sm"
-            className="filter-select"
+            onChange={e => setYear(parseInt(e.target.value))}
           >
-            {[2023, 2024, 2025, 2026].map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </Form.Select>
+            {[2023,2024,2025,2026].map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
         </div>
       </div>
 
-      {/* Budget and Total Section - Stacks on Mobile */}
-      <Row className="g-3 mb-4">
-        <Col xs={12} lg={6}>
-          <Card className="border-0 shadow-sm h-100 budget-card">
-            <Card.Header className="bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-              <h5 className="mb-0 budget-title">🎯 Monthly Budget</h5>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => {
-                  setTempBudget(monthlyBudget);
-                  setShowBudgetModal(true);
-                }}
-                className="budget-btn"
-              >
-                <i className="fas fa-edit me-1"></i>
-                {monthlyBudget ? 'Edit' : 'Set'} Budget
-              </Button>
-            </Card.Header>
-            <Card.Body>
-              {monthlyBudget ? (
-                <>
-                  <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-                    <div>
-                      <small className="text-muted">Monthly Budget</small>
-                      <h3 className="text-success mb-0 budget-amount">
-                        Rs. {parseFloat(monthlyBudget).toFixed(2)}
-                      </h3>
-                    </div>
-                    <div className="text-end">
-                      <small className="text-muted">Remaining</small>
-                      <h4 className={`mb-0 remaining-amount ${remainingBudget >= 0 ? 'text-success' : 'text-danger'}`}>
-                        Rs. {Math.abs(remainingBudget).toFixed(2)}
-                      </h4>
-                      <small className={remainingBudget >= 0 ? 'text-success' : 'text-danger'}>
-                        {remainingBudget >= 0 ? 'Left' : 'Over Budget'}
-                      </small>
-                    </div>
-                  </div>
-
-                  <div className="mb-2">
-                    <div className="d-flex justify-content-between mb-1">
-                      <small className="text-muted">Budget Usage</small>
-                      <small className="text-muted">{budgetUsage.toFixed(1)}%</small>
-                    </div>
-                    <div className="progress" style={{ height: '8px' }}>
-                      <div
-                        className={`progress-bar ${budgetUsage > 100 ? 'bg-danger' : budgetUsage > 80 ? 'bg-warning' : 'bg-success'}`}
-                        style={{ width: `${Math.min(budgetUsage, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="d-flex justify-content-between text-center mt-3 budget-stats">
-                    <div>
-                      <div className="fw-bold text-dark stat-value">
-                        Rs. {summary?.total_all?.toFixed(2) || '0.00'}
-                      </div>
-                      <small className="text-muted">Spent</small>
-                    </div>
-                    <div>
-                      <div className={`fw-bold stat-value ${remainingBudget >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {remainingBudget >= 0 ? 'Rs. ' + remainingBudget.toFixed(2) : '-Rs. ' + Math.abs(remainingBudget).toFixed(2)}
-                      </div>
-                      <small className="text-muted">Balance</small>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-4 no-budget">
-                  <i className="fas fa-bullseye fa-2x text-muted mb-3"></i>
-                  <h6 className="text-muted">No Budget Set</h6>
-                  <p className="text-muted small mb-3">Set a monthly budget to track your savings</p>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setShowBudgetModal(true)}
-                  >
-                    <i className="fas fa-plus me-1"></i>
-                    Set Monthly Budget
-                  </Button>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-
-        {/* Total Summary Card - Responsive */}
-        <Col xs={12} lg={6}>
-          <Card className="border-0 shadow-lg bg-gradient-primary text-white h-100 total-card">
-            <Card.Body className="p-3 p-md-4">
-              <div className="d-flex align-items-start mb-2 flex-wrap gap-2">
-                <div className="bg-white bg-opacity-20 rounded-circle p-2 icon-wrapper">
-                  <i className="fas fa-chart-pie fa-lg text-white"></i>
-                </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-white-50 mb-1 total-header">
-                    {getMonthName(selectedMonth)} {selectedYear} Expenses
-                  </h6>
-                  <h1 className="mb-2 fw-bold text-white total-amount">
-                    Rs. {summary?.total_all?.toFixed(2) || '0.00'}
-                  </h1>
-                  
-                  <div className="d-flex flex-wrap gap-2 gap-md-3 metrics-row">
-                    {summary?.total_savings > 0 && (
-                      <div className="savings-badge">
-                        <span className="text-success fw-bold">
-                          💰 Rs. {summary.total_savings.toFixed(2)} Saved
-                        </span>
-                      </div>
-                    )}
-                    {monthlyBudget && (
-                      <div className="budget-badge">
-                        <span className={remainingBudget >= 0 ? 'text-warning fw-bold' : 'text-danger fw-bold'}>
-                          {remainingBudget >= 0 ? '📊 ' : '⚠️ '}
-                          Rs. {Math.abs(remainingBudget).toFixed(2)} {remainingBudget >= 0 ? 'Left' : 'Over'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="d-flex gap-3 gap-md-4 mt-3 summary-stats">
-                <div>
-                  <small className="text-white-50">Avg. Discount</small>
-                  <div className="fw-bold">{summary?.average_discount?.toFixed(1) || '0'}%</div>
-                </div>
-                <div>
-                  <small className="text-white-50">Categories</small>
-                  <div className="fw-bold">
-                    {cardData.filter(card => card.value > 0).length}
-                  </div>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Expense Categories - Responsive Grid */}
-      <Row className="g-3">
-        {cardData.map((card, index) => (
-          <Col xs={6} sm={6} md={4} lg={3} xl={3} key={index}>
-            <Card className="h-100 border-0 shadow-sm hover-shadow expense-card">
-              <Card.Body className="p-3">
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <div className="flex-grow-1">
-                    <h6 className="card-title text-muted mb-2 expense-title">
-                      {card.title}
-                    </h6>
-                    <h4 className="text-dark mb-0 expense-amount">
-                      Rs. {card.value?.toFixed(2) || '0.00'}
-                    </h4>
-                  </div>
-                  <div className={`bg-${card.color} bg-opacity-10 rounded-circle p-2 icon-bg`}>
-                    <span className="expense-icon">{card.icon}</span>
-                  </div>
-                </div>
-                <small className="text-muted expense-percentage">
-                  {summary?.total_all ? `${((card.value / summary.total_all) * 100 || 0).toFixed(1)}% of total` : '0%'}
-                </small>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-        
-        {/* Total Expenses Card */}
-        <Col xs={6} sm={6} md={4} lg={3} xl={3}>
-          <Card className="h-100 border-0 shadow-lg bg-success text-white expense-card">
-            <Card.Body className="p-3">
-              <div className="d-flex justify-content-between align-items-start mb-2">
-                <div className="flex-grow-1">
-                  <h6 className="card-title text-white-50 mb-2 expense-title">
-                    💰 Total
-                  </h6>
-                  <h4 className="text-white mb-0 expense-amount">
-                    Rs. {summary?.total_all?.toFixed(2) || '0.00'}
-                  </h4>
-                  {summary?.total_savings > 0 && (
-                    <small className="text-white-50 d-none d-sm-block">After discounts</small>
-                  )}
-                </div>
-                <div className="bg-white bg-opacity-20 rounded-circle p-2 icon-bg">
-                  <i className="fas fa-wallet text-white expense-icon"></i>
-                </div>
-              </div>
-              {summary?.total_savings > 0 && (
-                <Badge bg="light" text="dark" className="savings-badge-small">
-                  Saved Rs. {summary.total_savings.toFixed(2)}
-                </Badge>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Quick Stats - Stacks on Mobile */}
-      {summary && summary.total_all > 0 && (
-        <Row className="mt-4 g-3">
-          <Col xs={12} md={6}>
-            <Card className="border-0 shadow-sm stats-card">
-              <Card.Body>
-                <h6 className="text-muted mb-3">📊 This Month's Overview</h6>
-                <div className="d-flex justify-content-between text-center stats-grid">
-                  <div>
-                    <div className="text-primary fw-bold stat-number">
-                      {cardData.filter(card => card.value > 0).length}
-                    </div>
-                    <small className="text-muted stat-label">Active</small>
-                  </div>
-                  <div>
-                    <div className="text-success fw-bold stat-number">
-                      {summary.average_discount?.toFixed(1)}%
-                    </div>
-                    <small className="text-muted stat-label">Discount</small>
-                  </div>
-                  <div>
-                    <div className="text-info fw-bold stat-number">
-                      {(() => {
-                        const highestCategory = cardData.reduce((max, card) =>
-                          card.value > max.value ? card : max, { value: 0, title: 'None' }
-                        );
-                        return highestCategory.title.split(' ')[1] || highestCategory.title.substring(0, 8);
-                      })()}
-                    </div>
-                    <small className="text-muted stat-label">Highest</small>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col xs={12} md={6}>
-            <Card className="border-0 shadow-sm stats-card">
-              <Card.Body>
-                <h6 className="text-muted mb-3">🎯 Savings Summary</h6>
-                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                  <div>
-                    <div className="text-success fw-bold stat-number">
-                      Rs. {summary.total_savings?.toFixed(2) || '0.00'}
-                    </div>
-                    <small className="text-muted stat-label">Total Savings</small>
-                  </div>
-                  <div className="text-end">
-                    <div className="text-warning fw-bold stat-number">
-                      {summary.average_discount?.toFixed(1)}%
-                    </div>
-                    <small className="text-muted stat-label">Avg. Discount</small>
-                  </div>
-                </div>
-                {summary.total_savings > 0 && (
-                  <div className="mt-2">
-                    <small className="text-muted savings-info">
-                      You saved {((summary.total_savings / summary.original_total_all) * 100).toFixed(1)}% of original expenses
-                    </small>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+      {error && (
+        <div className="alert-hbm error">
+          <span>⚠</span> {error}
+        </div>
       )}
 
-      {/* Empty State */}
-      {summary && summary.total_all === 0 && (
-        <Card className="border-0 shadow-sm text-center py-5 mt-4 empty-state">
-          <Card.Body>
-            <i className="fas fa-chart-line fa-3x text-muted mb-3"></i>
-            <h5 className="text-muted">No expenses for {getMonthName(selectedMonth)} {selectedYear}</h5>
-            <p className="text-muted">Start tracking by adding your first bill.</p>
-          </Card.Body>
-        </Card>
-      )}
+      {/* ── Hero + Budget row ── */}
+      <div className="dash-top-row">
+        {/* Hero total card */}
+        <div className="hero-card">
+          <div className="hero-label">Total Spent</div>
+          <div className="hero-amount">Rs. {fmt(total)}</div>
+          <div className="hero-meta">
+            <div className="hero-meta-item">
+              <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Month</div>
+              <div className="hero-meta-value">{MONTHS[selectedMonth-1].slice(0,3)} {selectedYear}</div>
+            </div>
+            {summary?.total_savings > 0 && (
+              <div className="hero-meta-item">
+                <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Saved via Discounts</div>
+                <div className="hero-meta-value" style={{ color: '#86efac' }}>Rs. {fmt(summary.total_savings)}</div>
+              </div>
+            )}
+            <div className="hero-meta-item">
+              <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categories</div>
+              <div className="hero-meta-value">{CATEGORIES.filter(c => (summary?.[`total_${c.key}`]||0) > 0).length} active</div>
+            </div>
+          </div>
 
-      {/* Budget Modal - Mobile Optimized */}
-      <Modal show={showBudgetModal} onHide={() => setShowBudgetModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>💰 Set Monthly Budget</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group>
-            <Form.Label>Monthly Budget Amount (Rs.)</Form.Label>
-            <Form.Control
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="Enter your monthly budget"
-              value={tempBudget}
-              onChange={(e) => setTempBudget(e.target.value)}
-              autoFocus
-            />
-            <Form.Text className="text-muted">
-              Track your monthly savings
-            </Form.Text>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer className="flex-wrap gap-2">
-          {monthlyBudget && (
-            <Button variant="outline-danger" onClick={handleClearBudget} size="sm" className="flex-grow-1 flex-sm-grow-0">
-              Clear
-            </Button>
+          {/* Budget bar inside hero */}
+          {budgetN && (
+            <div className="hero-budget-bar">
+              <div className="hero-budget-header">
+                <span>Budget: Rs. {fmt(budgetN)}</span>
+                <span style={{ color: isOver ? '#fca5a5' : '#86efac', fontWeight: 700 }}>
+                  {isOver ? `Rs. ${fmt(Math.abs(remaining))} over` : `Rs. ${fmt(remaining)} left`}
+                </span>
+              </div>
+              <div className="hero-progress-track">
+                <div
+                  className="hero-progress-fill"
+                  style={{ width: `${pct}%`, background: isOver ? '#ef4444' : pct > 80 ? '#f59e0b' : '#22c55e' }}
+                ></div>
+              </div>
+            </div>
           )}
-          <Button variant="secondary" onClick={() => setShowBudgetModal(false)} size="sm" className="flex-grow-1 flex-sm-grow-0">
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSaveBudget} size="sm" className="flex-grow-1 flex-sm-grow-0">
-            Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </div>
+
+        {/* Budget card */}
+        <div className="hbm-card budget-side-card">
+          <div className="card-header-clean">
+            <div>
+              <div className="section-title">🎯 Budget</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)', marginTop: 2 }}>{MONTHS[selectedMonth-1]} {selectedYear}</div>
+            </div>
+            <button
+              className="btn-ghost-hbm"
+              style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+              onClick={() => { setTempBudget(budget); setShowModal(true); }}
+            >
+              {budget ? 'Edit' : 'Set Budget'}
+            </button>
+          </div>
+          <div className="card-body-clean">
+            {budgetN ? (
+              <div className="budget-details-grid">
+                <div className="budget-detail-item">
+                  <div className="budget-detail-label">Budget</div>
+                  <div className="budget-detail-value">Rs. {fmt(budgetN)}</div>
+                </div>
+                <div className="budget-detail-item">
+                  <div className="budget-detail-label">Spent</div>
+                  <div className="budget-detail-value" style={{ color: 'var(--brand-600)' }}>Rs. {fmt(total)}</div>
+                </div>
+                <div className="budget-detail-item">
+                  <div className="budget-detail-label">{isOver ? 'Over by' : 'Remaining'}</div>
+                  <div className="budget-detail-value" style={{ color: isOver ? 'var(--danger-500)' : 'var(--success-600)' }}>
+                    Rs. {fmt(Math.abs(remaining))}
+                  </div>
+                </div>
+                <div className="budget-detail-item">
+                  <div className="budget-detail-label">Used</div>
+                  <div className="budget-detail-value">{((total/budgetN)*100).toFixed(1)}%</div>
+                </div>
+                <div style={{ gridColumn: '1/-1' }}>
+                  <div className="progress-hbm">
+                    <div
+                      className={`bar ${isOver ? 'bar-red' : pct > 80 ? 'bar-yellow' : 'bar-green'}`}
+                      style={{ width: `${pct}%` }}
+                    ></div>
+                  </div>
+                  {isOver && <p style={{ fontSize: '0.72rem', color: 'var(--danger-500)', marginTop: 6 }}>⚠️ You've exceeded your budget this month.</p>}
+                  {!isOver && pct > 80 && <p style={{ fontSize: '0.72rem', color: 'var(--warning-600)', marginTop: 6 }}>⚠️ Over 80% of budget used — spend carefully.</p>}
+                </div>
+              </div>
+            ) : (
+              <div className="empty-state" style={{ padding: '24px 0' }}>
+                <div className="empty-icon" style={{ fontSize: '2rem' }}>🎯</div>
+                <h5>No budget set</h5>
+                <p>Set a monthly budget to track how much you have left to spend.</p>
+                <button className="btn-primary-hbm" style={{ marginTop: 8 }} onClick={() => setShowModal(true)}>
+                  Set Budget
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Category Grid ── */}
+      <div className="section-divider"><span>Expense Categories</span></div>
+
+      {total === 0 ? (
+        <div className="hbm-card">
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h5>No expenses this month</h5>
+            <p>Start by adding your first bill for {MONTHS[selectedMonth-1]} {selectedYear}.</p>
+            <button className="btn-primary-hbm" style={{ marginTop: 8 }} onClick={() => navigate('/add-bill')}>
+              + Add Expense
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="category-grid">
+          {CATEGORIES.map(cat => {
+            const value = summary?.[`total_${cat.key}`] || 0;
+            const pctOfTotal = total ? ((value / total) * 100) : 0;
+            if (value === 0) return null;
+            return (
+              <div
+                key={cat.key}
+                className="hbm-card clickable category-card"
+                onClick={() => navigate(`/bills?category=${cat.key.toUpperCase()}&month=${selectedMonth}&year=${selectedYear}`)}
+              >
+                <div className="category-card-inner">
+                  <div className="cat-icon-wrap" style={{ background: cat.bg }}>
+                    <span style={{ fontSize: '1.3rem' }}>{cat.icon}</span>
+                  </div>
+                  <div className="cat-info">
+                    <div className="cat-label">{cat.label}</div>
+                    <div className="cat-amount" style={{ color: cat.color }}>Rs. {fmt(value)}</div>
+                  </div>
+                  <div className="cat-pct">
+                    <div className="cat-pct-num">{pctOfTotal.toFixed(1)}%</div>
+                    <div className="cat-pct-bar" style={{ '--bar-color': cat.color }}>
+                      <div style={{ width: `${pctOfTotal}%`, height: '100%', background: cat.color, borderRadius: 4 }}></div>
+                    </div>
+                  </div>
+                  <span className="cat-arrow">→</span>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* All expenses card */}
+          <div
+            className="hbm-card clickable category-card category-total-card"
+            onClick={() => navigate(`/bills?month=${selectedMonth}&year=${selectedYear}`)}
+          >
+            <div className="category-card-inner">
+              <div className="cat-icon-wrap" style={{ background: '#eff6ff' }}>
+                <span style={{ fontSize: '1.3rem' }}>💼</span>
+              </div>
+              <div className="cat-info">
+                <div className="cat-label" style={{ color: 'var(--brand-600)', fontWeight: 700 }}>View All</div>
+                <div className="cat-amount" style={{ color: 'var(--brand-600)' }}>Rs. {fmt(total)}</div>
+              </div>
+              <span className="cat-arrow" style={{ color: 'var(--brand-600)' }}>→</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Stats ── */}
+      {total > 0 && topCategories.length > 0 && (
+        <>
+          <div className="section-divider"><span>Top Spending</span></div>
+          <div className="top-cats-row">
+            {topCategories.map((cat, i) => (
+              <div key={cat.key} className="hbm-card top-cat-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--gray-400)', width: 16 }}>#{i+1}</div>
+                  <div style={{ fontSize: '1.5rem' }}>{cat.icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', fontWeight: 600 }}>{cat.label}</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--gray-900)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.01em' }}>Rs. {fmt(cat.value)}</div>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: cat.color, background: cat.bg, padding: '3px 8px', borderRadius: 999 }}>
+                    {((cat.value/total)*100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* ── Budget Modal ── */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h3 className="modal-title">Set Budget</h3>
+                <p className="modal-subtitle">{MONTHS[selectedMonth-1]} {selectedYear}</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <label className="form-label-hbm">Monthly Budget (Rs.)</label>
+              <input
+                type="number"
+                className="form-control-hbm"
+                placeholder="e.g. 50000"
+                value={tempBudget}
+                onChange={e => setTempBudget(e.target.value)}
+                autoFocus
+                min="0"
+                step="0.01"
+              />
+              <p style={{ fontSize: '0.78rem', color: 'var(--gray-400)', marginTop: 8 }}>
+                This budget applies only to {MONTHS[selectedMonth-1]} {selectedYear}.
+              </p>
+            </div>
+            <div className="modal-footer">
+              {budget && (
+                <button className="btn-danger-hbm" onClick={clearBudget}>Clear</button>
+              )}
+              <button className="btn-ghost-hbm" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn-primary-hbm" onClick={saveBudget}>Save Budget</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Dashboard;
+}
