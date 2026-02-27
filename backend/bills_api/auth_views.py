@@ -36,7 +36,7 @@ def _set_refresh_cookie(response, refresh_token):
         refresh_token,
         httponly=True,
         secure=secure,
-        samesite='Lax',
+        samesite='None',
         max_age=max_age,
     )
 
